@@ -14,7 +14,7 @@ packages/farm-game  Hay Day–style farm game (first title)
 
 | Game | Path | Status |
 |------|------|--------|
-| Sunny Acre Farm | `/games/farm` | Playable MVP |
+| Sunny Acre Farm | `/games/farm` | Playable 3D MVP |
 
 ## Develop
 

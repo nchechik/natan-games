@@ -6,7 +6,8 @@ import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Sunny Acre Farm · Natan Games",
-  description: "Plant crops, expand your fields, and sell harvests in this Hay Day–style web farm.",
+  description:
+    "Plant, grow, and harvest in a 3D countryside farm with animated crops and interactive fields.",
 };
 
 export default function FarmGamePage() {

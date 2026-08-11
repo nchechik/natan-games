@@ -5,7 +5,7 @@ const games = [
   {
     id: "farm",
     name: "Sunny Acre Farm",
-    tagline: "Plant, wait, harvest — grow your cozy countryside.",
+    tagline: "3D farm sim — plant, watch crops grow, harvest under the sun.",
     href: "/games/farm",
     status: "Playable",
     tone: "farm",
