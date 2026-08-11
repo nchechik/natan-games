@@ -1,0 +1,25 @@
+.page {
+  min-height: 100vh;
+  background: #7ec8e8;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0.65rem 1.25rem;
+  background: rgba(255, 250, 235, 0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(92, 61, 46, 0.12);
+}
+
+.back {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #2f4a28;
+  opacity: 0.85;
+}
+
+.back:hover {
+  opacity: 1;
+}
