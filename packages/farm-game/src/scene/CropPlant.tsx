@@ -8,35 +8,124 @@ import { CROPS } from "../types";
 
 const STAGE_SCALE: Record<GrowthStage, number> = {
   empty: 0,
-  seed: 0.22,
-  sprout: 0.62,
+  seed: 0.28,
+  sprout: 0.68,
   grown: 1,
   wilted: 0.45,
 };
 
+/** Stalk offsets for a natural wheat clump */
+const WHEAT_STALKS = [
+  { x: 0, z: 0, h: 1, lean: 0, twist: 0 },
+  { x: 0.14, z: 0.08, h: 0.92, lean: 0.12, twist: 0.4 },
+  { x: -0.13, z: 0.1, h: 0.88, lean: -0.1, twist: -0.5 },
+  { x: 0.1, z: -0.12, h: 0.95, lean: 0.08, twist: 0.8 },
+  { x: -0.11, z: -0.09, h: 0.9, lean: -0.14, twist: -0.3 },
+  { x: 0.02, z: 0.18, h: 0.84, lean: 0.06, twist: 1.1 },
+  { x: -0.04, z: -0.18, h: 0.86, lean: -0.05, twist: -1.0 },
+] as const;
+
+function WheatEar({ tint, y }: { tint: string; y: number }) {
+  const grains = useMemo(
+    () =>
+      Array.from({ length: 9 }, (_, i) => ({
+        y: i * 0.045,
+        scale: 1 - i * 0.05,
+        rot: i * 0.55,
+      })),
+    [],
+  );
+
+  return (
+    <group position={[0, y, 0]}>
+      {grains.map((g, i) => (
+        <group key={i} position={[0, g.y, 0]} rotation={[0, g.rot, 0]}>
+          <mesh position={[0.028, 0, 0]} scale={[g.scale, g.scale, g.scale]} castShadow>
+            <sphereGeometry args={[0.032, 8, 8]} />
+            <meshStandardMaterial color={tint} roughness={0.55} />
+          </mesh>
+          <mesh position={[-0.028, 0, 0]} scale={[g.scale, g.scale, g.scale]} castShadow>
+            <sphereGeometry args={[0.032, 8, 8]} />
+            <meshStandardMaterial color={tint} roughness={0.55} />
+          </mesh>
+          {/* awn / bristle */}
+          <mesh
+            position={[0.04, 0.02, 0]}
+            rotation={[0, 0, 0.55]}
+            scale={[g.scale, g.scale, g.scale]}
+          >
+            <cylinderGeometry args={[0.004, 0.002, 0.16, 4]} />
+            <meshStandardMaterial color="#c9a24a" roughness={0.7} />
+          </mesh>
+          <mesh
+            position={[-0.04, 0.02, 0]}
+            rotation={[0, 0, -0.55]}
+            scale={[g.scale, g.scale, g.scale]}
+          >
+            <cylinderGeometry args={[0.004, 0.002, 0.16, 4]} />
+            <meshStandardMaterial color="#c9a24a" roughness={0.7} />
+          </mesh>
+        </group>
+      ))}
+      <mesh position={[0, 0.38, 0]}>
+        <coneGeometry args={[0.02, 0.08, 5]} />
+        <meshStandardMaterial color={tint} roughness={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+function WheatStalk({
+  tint,
+  x,
+  z,
+  h,
+  lean,
+  twist,
+}: {
+  tint: string;
+  x: number;
+  z: number;
+  h: number;
+  lean: number;
+  twist: number;
+}) {
+  const stemH = 0.78 * h;
+  return (
+    <group position={[x, 0, z]} rotation={[lean * 0.35, twist, lean]}>
+      {/* stem */}
+      <mesh position={[0, stemH / 2, 0]} castShadow>
+        <cylinderGeometry args={[0.014, 0.022, stemH, 6]} />
+        <meshStandardMaterial color="#6fa04a" roughness={0.85} />
+      </mesh>
+      {/* leaf blades */}
+      <mesh
+        position={[0.05, stemH * 0.35, 0]}
+        rotation={[0.15, 0.2, 0.85]}
+        castShadow
+      >
+        <boxGeometry args={[0.22, 0.012, 0.045]} />
+        <meshStandardMaterial color="#5f9a42" roughness={0.9} />
+      </mesh>
+      <mesh
+        position={[-0.045, stemH * 0.55, 0.02]}
+        rotation={[-0.1, -0.3, -0.95]}
+        castShadow
+      >
+        <boxGeometry args={[0.18, 0.01, 0.038]} />
+        <meshStandardMaterial color="#4f8f3a" roughness={0.9} />
+      </mesh>
+      <WheatEar tint={tint} y={stemH} />
+    </group>
+  );
+}
+
 function WheatCrop({ tint }: { tint: string }) {
   return (
     <group>
-      {[0, 1, 2, 3, 4].map((i) => {
-        const a = (i / 5) * Math.PI * 2;
-        const r = 0.12 + (i % 2) * 0.05;
-        return (
-          <mesh key={i} position={[Math.cos(a) * r, 0.45, Math.sin(a) * r]}>
-            <cylinderGeometry args={[0.02, 0.03, 0.9, 5]} />
-            <meshStandardMaterial color="#6f9b45" roughness={0.85} />
-          </mesh>
-        );
-      })}
-      {[0, 1, 2, 3, 4].map((i) => {
-        const a = (i / 5) * Math.PI * 2 + 0.3;
-        const r = 0.1 + (i % 2) * 0.04;
-        return (
-          <mesh key={`h-${i}`} position={[Math.cos(a) * r, 0.92, Math.sin(a) * r]}>
-            <coneGeometry args={[0.06, 0.22, 6]} />
-            <meshStandardMaterial color={tint} roughness={0.7} />
-          </mesh>
-        );
-      })}
+      {WHEAT_STALKS.map((s, i) => (
+        <WheatStalk key={i} tint={tint} {...s} />
+      ))}
     </group>
   );
 }

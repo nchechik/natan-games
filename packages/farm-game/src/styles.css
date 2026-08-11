@@ -445,6 +445,20 @@
   text-align: center;
 }
 
+.fg-plot-tip {
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(31, 42, 28, 0.88);
+  color: #f4ffe8;
+  font-family: "Nunito", "Trebuchet MS", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  user-select: none;
+}
+
 @keyframes fg-brand-in {
   from {
     opacity: 0;
