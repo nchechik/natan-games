@@ -35,6 +35,7 @@ export function FarmGame() {
   const [state, dispatch] = useReducer(farmReducer, undefined, createInitialFarmState);
   const [hydrated, setHydrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [bagOpen, setBagOpen] = useState(false);
   const now = useNow(200);
   const skipFirstPersist = useRef(true);
 
@@ -154,104 +155,147 @@ export function FarmGame() {
         </div>
       </header>
 
-      <aside className="fg-panel fg-panel--overlay">
-        <section className="fg-section">
-          <h2>Seed bag</h2>
-          <div className="fg-crop-row">
-            {CROP_LIST.map((crop) => {
-              const locked = state.wallet.level < crop.unlockLevel;
-              const selected = state.selectedCrop === crop.id;
-              return (
-                <button
-                  key={crop.id}
-                  type="button"
-                  className={`fg-crop ${selected ? "is-selected" : ""} ${locked ? "is-locked" : ""}`}
-                  disabled={locked}
-                  onClick={() =>
-                    dispatch({ type: "SELECT_CROP", cropId: crop.id })
-                  }
-                  title={
-                    locked
-                      ? `Unlocks at level ${crop.unlockLevel}`
-                      : `${crop.name} · ${formatDuration(crop.growMs)}`
-                  }
-                >
-                  <span className="fg-crop__emoji">{crop.emoji}</span>
-                  <span className="fg-crop__name">{crop.name}</span>
-                  <span className="fg-crop__qty">
-                    ×{state.inventory.seeds[crop.id]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="fg-hint">
-            Drag to orbit · click soil to plant · harvest when crops glow
-          </p>
-        </section>
+      <aside
+        className={`fg-panel fg-panel--overlay ${bagOpen ? "is-open" : "is-collapsed"}`}
+        aria-label="Seed bag and market"
+      >
+        {!bagOpen ? (
+          <button
+            type="button"
+            className="fg-bag-toggle"
+            onClick={() => setBagOpen(true)}
+            aria-expanded={false}
+            aria-controls="fg-bag-panel"
+          >
+            <span className="fg-bag-toggle__emoji" aria-hidden>
+              {CROPS[state.selectedCrop].emoji}
+            </span>
+            <span className="fg-bag-toggle__copy">
+              <strong>Seed bag</strong>
+              <span>
+                {CROPS[state.selectedCrop].name} · ×
+                {state.inventory.seeds[state.selectedCrop]}
+              </span>
+            </span>
+            <span className="fg-bag-toggle__chev" aria-hidden>
+              ▲
+            </span>
+          </button>
+        ) : (
+          <div id="fg-bag-panel" className="fg-panel__body">
+            <div className="fg-panel__toolbar">
+              <p className="fg-panel__title">Farm tools</p>
+              <button
+                type="button"
+                className="fg-bag-collapse"
+                onClick={() => setBagOpen(false)}
+                aria-expanded={true}
+                aria-controls="fg-bag-panel"
+              >
+                Hide panel
+                <span aria-hidden>▼</span>
+              </button>
+            </div>
 
-        <section className="fg-section">
-          <div className="fg-section__head">
-            <h2>Market</h2>
-            <button
-              type="button"
-              className="fg-text-btn"
-              disabled={totalHarvest === 0}
-              onClick={() => {
-                dispatch({ type: "SELL_ALL" });
-                flash("Sold everything at market");
-              }}
-            >
-              Sell all
-            </button>
-          </div>
-          <ul className="fg-market">
-            {CROP_LIST.map((crop) => {
-              const qty = state.inventory.harvest[crop.id];
-              const locked = state.wallet.level < crop.unlockLevel;
-              return (
-                <li key={crop.id} className="fg-market__row">
-                  <div>
-                    <strong>
-                      {crop.emoji} {crop.name}
-                    </strong>
-                    <span>
-                      Seed {crop.seedCost} · Sell {crop.sellPrice}
-                      {locked ? ` · Lv ${crop.unlockLevel}` : ""}
-                    </span>
-                  </div>
-                  <div className="fg-market__actions">
+            <section className="fg-section">
+              <h2>Seed bag</h2>
+              <div className="fg-crop-row">
+                {CROP_LIST.map((crop) => {
+                  const locked = state.wallet.level < crop.unlockLevel;
+                  const selected = state.selectedCrop === crop.id;
+                  return (
                     <button
+                      key={crop.id}
                       type="button"
-                      onClick={() => buySeeds(crop.id)}
+                      className={`fg-crop ${selected ? "is-selected" : ""} ${locked ? "is-locked" : ""}`}
                       disabled={locked}
+                      onClick={() =>
+                        dispatch({ type: "SELECT_CROP", cropId: crop.id })
+                      }
+                      title={
+                        locked
+                          ? `Unlocks at level ${crop.unlockLevel}`
+                          : `${crop.name} · ${formatDuration(crop.growMs)}`
+                      }
                     >
-                      Buy
+                      <span className="fg-crop__emoji">{crop.emoji}</span>
+                      <span className="fg-crop__name">{crop.name}</span>
+                      <span className="fg-crop__qty">
+                        ×{state.inventory.seeds[crop.id]}
+                      </span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (qty <= 0) {
-                          flash("Nothing to sell");
-                          return;
-                        }
-                        dispatch({
-                          type: "SELL_HARVEST",
-                          cropId: crop.id,
-                          qty: 1,
-                        });
-                        flash(`Sold ${crop.name} (+${crop.sellPrice})`);
-                      }}
-                      disabled={qty <= 0}
-                    >
-                      Sell ×{qty}
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+                  );
+                })}
+              </div>
+              <p className="fg-hint">
+                Drag to orbit · click soil to plant · harvest when crops glow
+              </p>
+            </section>
+
+            <section className="fg-section">
+              <div className="fg-section__head">
+                <h2>Market</h2>
+                <button
+                  type="button"
+                  className="fg-text-btn"
+                  disabled={totalHarvest === 0}
+                  onClick={() => {
+                    dispatch({ type: "SELL_ALL" });
+                    flash("Sold everything at market");
+                  }}
+                >
+                  Sell all
+                </button>
+              </div>
+              <ul className="fg-market">
+                {CROP_LIST.map((crop) => {
+                  const qty = state.inventory.harvest[crop.id];
+                  const locked = state.wallet.level < crop.unlockLevel;
+                  return (
+                    <li key={crop.id} className="fg-market__row">
+                      <div>
+                        <strong>
+                          {crop.emoji} {crop.name}
+                        </strong>
+                        <span>
+                          Seed {crop.seedCost} · Sell {crop.sellPrice}
+                          {locked ? ` · Lv ${crop.unlockLevel}` : ""}
+                        </span>
+                      </div>
+                      <div className="fg-market__actions">
+                        <button
+                          type="button"
+                          onClick={() => buySeeds(crop.id)}
+                          disabled={locked}
+                        >
+                          Buy
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (qty <= 0) {
+                              flash("Nothing to sell");
+                              return;
+                            }
+                            dispatch({
+                              type: "SELL_HARVEST",
+                              cropId: crop.id,
+                              qty: 1,
+                            });
+                            flash(`Sold ${crop.name} (+${crop.sellPrice})`);
+                          }}
+                          disabled={qty <= 0}
+                        >
+                          Sell ×{qty}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          </div>
+        )}
       </aside>
 
       {toast && <div className="fg-toast">{toast}</div>}
