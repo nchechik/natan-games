@@ -21,6 +21,8 @@ export type FarmAction =
   | { type: "BUY_HARVESTER" }
   | { type: "WORKER_TICK"; now: number }
   | { type: "HARVESTER_TICK"; now: number }
+  | { type: "PAUSE_HANDS" }
+  | { type: "SHIFT_GROWTH"; pausedMs: number }
   | { type: "RENAME_FARM"; name: string }
   | { type: "HYDRATE"; state: FarmState };
 
@@ -150,6 +152,27 @@ export function farmReducer(state: FarmState, action: FarmAction): FarmState {
         wallet: nextWallet,
         harvestWorkers: state.harvestWorkers + 1,
       };
+    }
+    case "PAUSE_HANDS": {
+      if (state.wateringPlotIds.length === 0 && state.harvestJobs.length === 0) {
+        return state;
+      }
+      return {
+        ...state,
+        wateringPlotIds: [],
+        harvestJobs: [],
+      };
+    }
+    case "SHIFT_GROWTH": {
+      const pausedMs = Math.max(0, action.pausedMs);
+      if (pausedMs <= 0) return state;
+      let changed = false;
+      const plots = state.plots.map((p) => {
+        if (!p.cropId || p.plantedAt == null) return p;
+        changed = true;
+        return { ...p, plantedAt: p.plantedAt + pausedMs };
+      });
+      return changed ? { ...state, plots } : state;
     }
     case "WORKER_TICK": {
       if (state.waterWorkers <= 0) return state;

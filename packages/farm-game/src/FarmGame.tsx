@@ -26,10 +26,49 @@ import { FarmCanvas } from "./scene/FarmCanvas";
 function useNow(intervalMs = 250): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), intervalMs);
-    return () => window.clearInterval(id);
+    const tick = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      setNow(Date.now());
+    };
+    const id = window.setInterval(tick, intervalMs);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        setNow(Date.now());
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [intervalMs]);
   return now;
+}
+
+function useTabVisible(): boolean {
+  const [visible, setVisible] = useState(() =>
+    typeof document === "undefined"
+      ? true
+      : document.visibilityState !== "hidden",
+  );
+
+  useEffect(() => {
+    const sync = () => setVisible(document.visibilityState !== "hidden");
+    const onHide = () => setVisible(false);
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("pageshow", sync);
+    return () => {
+      document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("pageshow", sync);
+    };
+  }, []);
+
+  return visible;
 }
 
 export function FarmGame() {
@@ -40,7 +79,9 @@ export function FarmGame() {
   const [marketTab, setMarketTab] = useState<"sell" | "buy">("sell");
   const [marketPulse, setMarketPulse] = useState(false);
   const now = useNow(200);
+  const tabVisible = useTabVisible();
   const skipFirstPersist = useRef(true);
+  const hiddenSinceRef = useRef<number | null>(null);
 
   useEffect(() => {
     const envelope = loadSave(SAVE_KEY, createInitialFarmState, SAVE_VERSION);
@@ -68,16 +109,42 @@ export function FarmGame() {
     return () => window.clearTimeout(id);
   }, [toast]);
 
+  // Pause hired hands when the tab/site is not focused; freeze crop timers too
   useEffect(() => {
-    if (!hydrated || state.waterWorkers <= 0) return;
-    dispatch({ type: "WORKER_TICK", now });
-  }, [hydrated, state.waterWorkers, state.wateringPlotIds, state.plots, now]);
+    if (!hydrated) return;
+    if (!tabVisible) {
+      hiddenSinceRef.current = Date.now();
+      dispatch({ type: "PAUSE_HANDS" });
+      return;
+    }
+    const hiddenSince = hiddenSinceRef.current;
+    if (hiddenSince != null) {
+      const pausedMs = Date.now() - hiddenSince;
+      hiddenSinceRef.current = null;
+      if (pausedMs > 0) {
+        dispatch({ type: "SHIFT_GROWTH", pausedMs });
+      }
+    }
+  }, [hydrated, tabVisible]);
 
   useEffect(() => {
-    if (!hydrated || state.harvestWorkers <= 0) return;
+    if (!hydrated || !tabVisible || state.waterWorkers <= 0) return;
+    dispatch({ type: "WORKER_TICK", now });
+  }, [
+    hydrated,
+    tabVisible,
+    state.waterWorkers,
+    state.wateringPlotIds,
+    state.plots,
+    now,
+  ]);
+
+  useEffect(() => {
+    if (!hydrated || !tabVisible || state.harvestWorkers <= 0) return;
     dispatch({ type: "HARVESTER_TICK", now });
   }, [
     hydrated,
+    tabVisible,
     state.harvestWorkers,
     state.harvestJobs,
     state.plots,
