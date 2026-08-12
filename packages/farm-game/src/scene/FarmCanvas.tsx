@@ -132,16 +132,14 @@ export function FarmCanvas({
             makeDefault
             enablePan={false}
             enableZoom
-            minPolarAngle={mobile ? 0.55 : 0.42}
-            maxPolarAngle={mobile ? 1.15 : 1.05}
-            minAzimuthAngle={mobile ? -0.55 : -0.85}
-            maxAzimuthAngle={mobile ? 0.55 : 0.85}
+            minPolarAngle={0.25}
+            maxPolarAngle={Math.PI / 2 - 0.08}
             minDistance={mobile ? 6.5 : 8}
-            maxDistance={mobile ? 14 : 18}
+            maxDistance={mobile ? 16 : 22}
             target={[0, 0.35, 0.15]}
             enableDamping
             dampingFactor={0.08}
-            rotateSpeed={mobile ? 0.55 : 0.8}
+            rotateSpeed={mobile ? 0.65 : 0.9}
             zoomSpeed={mobile ? 0.7 : 1}
             touches={{
               ONE: TOUCH.ROTATE,
