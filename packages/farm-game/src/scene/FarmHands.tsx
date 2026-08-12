@@ -306,7 +306,7 @@ export function WateringWorker({
 
   return (
     <a.group position-x={posX} position-y={0} position-z={posZ} scale={HAND_SCALE}>
-      <group rotation={[0, working ? 0.85 : Math.PI - 0.15, 0]}>
+      <group rotation={[0, working ? 0.85 : 0.1, 0]}>
         <a.group position-y={sit.to((v) => v * 0.12)}>
           <MiniFarmerBody
             outfit={WATER_OUTFIT}
