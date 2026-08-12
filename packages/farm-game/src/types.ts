@@ -7,11 +7,9 @@ export interface CropDef {
   id: CropId;
   name: string;
   emoji: string;
-  seedCost: number;
   sellPrice: number;
   xp: number;
   growMs: number;
-  unlockLevel: number;
   tint: string;
 }
 
@@ -22,11 +20,6 @@ export interface PlotState {
   plantedAt: number | null;
 }
 
-export interface FarmInventory {
-  seeds: Record<CropId, number>;
-  harvest: Record<CropId, number>;
-}
-
 export interface FarmState {
   farmName: string;
   wallet: {
@@ -35,81 +28,72 @@ export interface FarmState {
     xp: number;
     level: number;
   };
-  inventory: FarmInventory;
+  /** Harvested wheat waiting to be sold at market */
+  wheat: number;
   plots: PlotState[];
-  selectedCrop: CropId;
-  selectedTool: "plant" | "harvest" | "sell";
 }
 
-export const SAVE_KEY = "natan-games:farm:v1";
-export const SAVE_VERSION = 1;
+export const SAVE_KEY = "natan-games:farm:v2";
+export const SAVE_VERSION = 2;
 
+/** Wheat is the starter crop; other defs remain for plant meshes if unlocked later */
 export const CROPS: Record<CropId, CropDef> = {
   wheat: {
     id: "wheat",
     name: "Wheat",
     emoji: "🌾",
-    seedCost: 5,
-    sellPrice: 12,
+    sellPrice: 18,
     xp: 4,
-    growMs: 12_000,
-    unlockLevel: 1,
+    growMs: 10_000,
     tint: "#d4a017",
   },
   corn: {
     id: "corn",
     name: "Corn",
     emoji: "🌽",
-    seedCost: 10,
     sellPrice: 24,
     xp: 8,
     growMs: 22_000,
-    unlockLevel: 2,
     tint: "#f0c040",
   },
   carrot: {
     id: "carrot",
     name: "Carrot",
     emoji: "🥕",
-    seedCost: 18,
     sellPrice: 42,
     xp: 14,
     growMs: 35_000,
-    unlockLevel: 3,
     tint: "#e67a28",
   },
   tomato: {
     id: "tomato",
     name: "Tomato",
     emoji: "🍅",
-    seedCost: 28,
     sellPrice: 68,
     xp: 22,
     growMs: 50_000,
-    unlockLevel: 4,
     tint: "#d64545",
   },
   pumpkin: {
     id: "pumpkin",
     name: "Pumpkin",
     emoji: "🎃",
-    seedCost: 45,
     sellPrice: 110,
     xp: 36,
     growMs: 75_000,
-    unlockLevel: 5,
     tint: "#e8891a",
   },
 };
 
 export const CROP_LIST = Object.values(CROPS);
 
-export const PLOT_UNLOCK_COSTS = [0, 0, 0, 0, 40, 80, 140, 220, 320, 450, 600, 800];
+/** Index 0 is free/open; the rest show this coin price when locked */
+export const PLOT_UNLOCK_COSTS = [0, 20, 40, 65, 95, 130, 175, 230, 300, 380, 480, 600];
 
 export function createInitialFarmState(): FarmState {
   const plots: PlotState[] = Array.from({ length: 12 }, (_, i) => ({
     id: `plot-${i}`,
-    unlocked: i < 4,
+    unlocked: i === 0,
     cropId: null,
     plantedAt: null,
   }));
@@ -117,30 +101,13 @@ export function createInitialFarmState(): FarmState {
   return {
     farmName: "Sunny Acre",
     wallet: {
-      coins: 80,
-      gems: 5,
+      coins: 0,
+      gems: 0,
       xp: 0,
       level: 1,
     },
-    inventory: {
-      seeds: {
-        wheat: 6,
-        corn: 2,
-        carrot: 0,
-        tomato: 0,
-        pumpkin: 0,
-      },
-      harvest: {
-        wheat: 0,
-        corn: 0,
-        carrot: 0,
-        tomato: 0,
-        pumpkin: 0,
-      },
-    },
+    wheat: 0,
     plots,
-    selectedCrop: "wheat",
-    selectedTool: "plant",
   };
 }
 

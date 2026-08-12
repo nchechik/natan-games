@@ -172,12 +172,14 @@ function PlotMarker({
   cropTint,
   unlocked,
   hovered,
+  unlockCost,
 }: {
   stage: ReturnType<typeof getGrowthStage>;
   progress: number;
   cropTint: string | null;
   unlocked: boolean;
   hovered: boolean;
+  unlockCost: number;
 }) {
   const group = useRef<Group>(null);
 
@@ -190,15 +192,15 @@ function PlotMarker({
 
   if (!unlocked) {
     return (
-      <mesh position={[0, 0.4, 0]}>
-        <octahedronGeometry args={[0.18, 0]} />
-        <meshStandardMaterial
-          color="#e8d4a8"
-          emissive="#c4a574"
-          emissiveIntensity={hovered ? 0.45 : 0.18}
-          roughness={0.4}
-        />
-      </mesh>
+      <Html position={[0, 0.55, 0]} center style={{ pointerEvents: "none" }}>
+        <div className={`fg-unlock-tag ${hovered ? "is-hot" : ""}`}>
+          <span className="fg-unlock-tag__lock" aria-hidden>
+            🔒
+          </span>
+          <span className="fg-unlock-tag__coin" aria-hidden />
+          <strong>{unlockCost}</strong>
+        </div>
+      </Html>
     );
   }
 
@@ -408,6 +410,7 @@ export function PlotBed({
         cropTint={crop?.tint ?? null}
         unlocked={plot.unlocked}
         hovered={hovered}
+        unlockCost={unlockCost}
       />
     </a.group>
   );
