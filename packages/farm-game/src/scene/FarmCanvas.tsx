@@ -1,11 +1,44 @@
 "use client";
 
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useState } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
+import { TOUCH, type PerspectiveCamera } from "three";
 import type { PlotState } from "../types";
 import { FarmWorld } from "./FarmWorld";
 import { PlotBed } from "./PlotBed";
+
+function useMobileFarmView() {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px), (pointer: coarse)");
+    const sync = () => setMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return mobile;
+}
+
+function MobileCameraRig({ mobile }: { mobile: boolean }) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const cam = camera as PerspectiveCamera;
+    if (mobile) {
+      cam.position.set(6.2, 9.8, 8.4);
+      cam.fov = 42;
+    } else {
+      cam.position.set(9.5, 11.5, 9.5);
+      cam.fov = 36;
+    }
+    cam.updateProjectionMatrix();
+  }, [camera, mobile]);
+
+  return null;
+}
 
 export function FarmCanvas({
   plots,
@@ -20,18 +53,30 @@ export function FarmCanvas({
   onTapPlot: (plot: PlotState) => void;
   onUnlockPlot: (plot: PlotState, index: number) => void;
 }) {
+  const mobile = useMobileFarmView();
+
   return (
     <div className="fg-canvas">
       <Canvas
-        shadows
-        dpr={[1, 1.75]}
-        camera={{ position: [9.5, 11.5, 9.5], fov: 36, near: 0.1, far: 90 }}
-        gl={{ antialias: true, alpha: false }}
+        shadows={!mobile}
+        dpr={mobile ? [1, 1.35] : [1, 1.75]}
+        camera={{
+          position: [9.5, 11.5, 9.5],
+          fov: 36,
+          near: 0.1,
+          far: 90,
+        }}
+        gl={{
+          antialias: !mobile,
+          alpha: false,
+          powerPreference: "high-performance",
+        }}
         onCreated={({ gl }) => {
           gl.setClearColor("#87ceeb");
         }}
       >
         <Suspense fallback={null}>
+          <MobileCameraRig mobile={mobile} />
           <FarmWorld />
           {plots.map((plot, index) => (
             <PlotBed
@@ -46,23 +91,30 @@ export function FarmCanvas({
           ))}
           <ContactShadows
             position={[0, 0.01, 0]}
-            opacity={0.4}
+            opacity={mobile ? 0.28 : 0.4}
             scale={20}
-            blur={2.8}
+            blur={mobile ? 2 : 2.8}
             far={10}
           />
           <OrbitControls
             makeDefault
             enablePan={false}
-            minPolarAngle={0.42}
-            maxPolarAngle={1.05}
-            minAzimuthAngle={-0.85}
-            maxAzimuthAngle={0.85}
-            minDistance={8}
-            maxDistance={18}
-            target={[0, 0.5, 0.2]}
+            enableZoom
+            minPolarAngle={mobile ? 0.55 : 0.42}
+            maxPolarAngle={mobile ? 1.15 : 1.05}
+            minAzimuthAngle={mobile ? -0.55 : -0.85}
+            maxAzimuthAngle={mobile ? 0.55 : 0.85}
+            minDistance={mobile ? 6.5 : 8}
+            maxDistance={mobile ? 14 : 18}
+            target={[0, 0.35, 0.15]}
             enableDamping
             dampingFactor={0.08}
+            rotateSpeed={mobile ? 0.55 : 0.8}
+            zoomSpeed={mobile ? 0.7 : 1}
+            touches={{
+              ONE: TOUCH.ROTATE,
+              TWO: TOUCH.DOLLY_PAN,
+            }}
           />
         </Suspense>
       </Canvas>

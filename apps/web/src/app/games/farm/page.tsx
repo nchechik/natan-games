@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { FarmGame } from "@natan-games/farm-game";
 import "@natan-games/farm-game/styles.css";
@@ -10,6 +10,15 @@ export const metadata: Metadata = {
     "Plant, grow, and harvest on a colorful countryside farm — classic barn, crops, and cozy farmyard vibes.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#87ceeb",
+};
+
 export default function FarmGamePage() {
   return (
     <div className={styles.page}>
@@ -18,7 +27,9 @@ export default function FarmGamePage() {
           ← Natan Games
         </Link>
       </div>
-      <FarmGame />
+      <div className={styles.game}>
+        <FarmGame />
+      </div>
     </div>
   );
 }
