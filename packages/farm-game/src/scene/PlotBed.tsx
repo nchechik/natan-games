@@ -27,17 +27,93 @@ export function plotPosition(index: number): [number, number, number] {
   return [x, 0, z];
 }
 
-function SeedIcon({ tint = "#c4a06a" }: { tint?: string }) {
+/** Floating watering-can marker for empty plots */
+function WateringCanIcon() {
+  return (
+    <group scale={1.15} rotation={[0.15, 0.6, -0.35]}>
+      {/* Can body */}
+      <mesh position={[0, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.09, 0.11, 0.16, 10]} />
+        <meshStandardMaterial color="#3a8fd4" roughness={0.45} metalness={0.25} />
+      </mesh>
+      {/* Rim */}
+      <mesh position={[0, 0.085, 0]}>
+        <torusGeometry args={[0.09, 0.012, 6, 14]} />
+        <meshStandardMaterial color="#2a6fa8" roughness={0.4} metalness={0.3} />
+      </mesh>
+      {/* Handle */}
+      <mesh position={[-0.02, 0.12, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <torusGeometry args={[0.07, 0.014, 6, 12, Math.PI]} />
+        <meshStandardMaterial color="#2a6fa8" roughness={0.45} metalness={0.2} />
+      </mesh>
+      {/* Spout */}
+      <mesh position={[0.12, 0.02, 0]} rotation={[0, 0, -0.55]} castShadow>
+        <cylinderGeometry args={[0.018, 0.028, 0.16, 8]} />
+        <meshStandardMaterial color="#4aa3e0" roughness={0.4} metalness={0.25} />
+      </mesh>
+      {/* Spout tip */}
+      <mesh position={[0.19, -0.02, 0]}>
+        <sphereGeometry args={[0.025, 8, 8]} />
+        <meshStandardMaterial color="#2a6fa8" roughness={0.4} metalness={0.3} />
+      </mesh>
+    </group>
+  );
+}
+
+const WATER_DROP_COUNT = 8;
+
+/** Watering can pouring onto the bed while the growth bar fills */
+function WateringAnimation({ active }: { active: boolean }) {
+  const canRef = useRef<Group>(null);
+  const dropsRef = useRef<Group>(null);
+
+  useFrame((state) => {
+    if (!active) return;
+    const t = state.clock.elapsedTime;
+    if (canRef.current) {
+      canRef.current.position.y = 0.95 + Math.sin(t * 3.2) * 0.04;
+      canRef.current.rotation.z = -0.55 + Math.sin(t * 4.5) * 0.08;
+      canRef.current.rotation.y = 0.35 + Math.sin(t * 1.6) * 0.12;
+    }
+    if (dropsRef.current) {
+      dropsRef.current.children.forEach((child, i) => {
+        const phase = (t * 1.8 + i * 0.37) % 1;
+        const startX = 0.22 + (i % 3) * 0.04;
+        const startZ = ((i % 5) - 2) * 0.05;
+        child.position.set(
+          startX - phase * 0.08,
+          0.72 - phase * 0.55,
+          startZ + Math.sin(t * 2 + i) * 0.02,
+        );
+        const s = 0.7 + (1 - phase) * 0.5;
+        child.scale.setScalar(Math.max(0.15, s * (1 - phase * 0.85)));
+        child.visible = phase < 0.92;
+      });
+    }
+  });
+
+  if (!active) return null;
+
   return (
     <group>
-      <mesh castShadow>
-        <sphereGeometry args={[0.1, 12, 12]} />
-        <meshStandardMaterial color={tint} roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.02, 0]} scale={[0.72, 1.15, 0.72]}>
-        <sphereGeometry args={[0.08, 12, 12]} />
-        <meshStandardMaterial color="#8b6914" roughness={0.65} />
-      </mesh>
+      <group ref={canRef} position={[0.28, 0.95, 0]} rotation={[0.1, 0.35, -0.55]}>
+        <WateringCanIcon />
+      </group>
+      <group ref={dropsRef}>
+        {Array.from({ length: WATER_DROP_COUNT }, (_, i) => (
+          <mesh key={i} position={[0.22, 0.7, 0]}>
+            <sphereGeometry args={[0.028, 6, 6]} />
+            <meshStandardMaterial
+              color="#5ec8ff"
+              emissive="#2a9fd4"
+              emissiveIntensity={0.35}
+              transparent
+              opacity={0.85}
+              roughness={0.2}
+            />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 }
@@ -130,7 +206,7 @@ function PlotMarker({
     return (
       <group ref={group} position={[0, 1.05, 0]}>
         <Billboard>
-          <SeedIcon tint="#c4a06a" />
+          <WateringCanIcon />
         </Billboard>
       </group>
     );
@@ -260,8 +336,10 @@ export function PlotBed({
       : crop
         ? ready
           ? `Harvest ${crop.name}`
-          : `${crop.name} growing`
-        : "Empty plot — plant seeds";
+          : `Watering ${crop.name}`
+        : "Empty plot — tap to water and plant";
+
+  const isGrowing = stage === "seed" || stage === "sprout";
 
   return (
     <a.group
@@ -321,6 +399,8 @@ export function PlotBed({
           <CropPlant cropId={plot.cropId} stage={stage} swaySeed={index * 1.7} />
         </group>
       )}
+
+      <WateringAnimation active={isGrowing} />
 
       <PlotMarker
         stage={stage}

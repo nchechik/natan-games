@@ -86,7 +86,7 @@ export function FarmGame() {
         return;
       }
       dispatch({ type: "TAP_PLOT", plotId: plot.id, now });
-      flash(`Planted ${CROPS[state.selectedCrop].name}`);
+      flash(`Watered ${CROPS[state.selectedCrop].name}`);
       return;
     }
     dispatch({ type: "TAP_PLOT", plotId: plot.id, now });
@@ -229,7 +229,7 @@ export function FarmGame() {
                 })}
               </div>
               <p className="fg-hint">
-                Tap a field to plant · harvest when crops sparkle · expand locked beds with coins
+                Tap a field to water & plant · harvest when crops sparkle · expand locked beds with coins
               </p>
             </section>
 
