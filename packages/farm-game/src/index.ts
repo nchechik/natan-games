@@ -2,6 +2,7 @@ export { FarmGame } from "./FarmGame";
 export {
   CROPS,
   CROP_LIST,
+  WORKER_COST,
   createInitialFarmState,
   SAVE_KEY,
   SAVE_VERSION,

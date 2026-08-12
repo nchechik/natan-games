@@ -31,10 +31,16 @@ export interface FarmState {
   /** Harvested wheat waiting to be sold at market */
   wheat: number;
   plots: PlotState[];
+  /** Hired hand that auto-waters one empty field at a time */
+  hasWorker: boolean;
+  /** Plot the worker is currently watering, if any */
+  workerPlotId: PlotId | null;
 }
 
-export const SAVE_KEY = "natan-games:farm:v2";
-export const SAVE_VERSION = 2;
+export const SAVE_KEY = "natan-games:farm:v3";
+export const SAVE_VERSION = 3;
+
+export const WORKER_COST = 100;
 
 /** Wheat is the starter crop; other defs remain for plant meshes if unlocked later */
 export const CROPS: Record<CropId, CropDef> = {
@@ -108,6 +114,8 @@ export function createInitialFarmState(): FarmState {
     },
     wheat: 0,
     plots,
+    hasWorker: false,
+    workerPlotId: null,
   };
 }
 

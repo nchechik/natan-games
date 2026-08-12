@@ -16,7 +16,7 @@ import {
   WoodenCrate,
 } from "./FarmProps";
 
-export function FarmWorld() {
+export function FarmWorld({ hasWorker = false }: { hasWorker?: boolean }) {
   const grassTufts = useMemo(
     () =>
       Array.from({ length: 55 }, (_, i) => ({
@@ -99,7 +99,8 @@ export function FarmWorld() {
 
       <Barn position={[-6.8, 0, -4.8]} />
       <Cow position={[-4.6, 0, -3.6]} />
-      <Farmer position={[-2.8, 0, 3.6]} />
+      {/* Decorative idle farmer — hidden once a hired worker is on the farm */}
+      {!hasWorker && <Farmer position={[-2.8, 0, 3.6]} />}
 
       <WoodenCrate position={[-5.1, 0, -5.6]} />
       <WoodenCrate position={[-4.4, 0, -5.3]} scale={0.85} />

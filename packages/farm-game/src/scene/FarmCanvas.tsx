@@ -4,9 +4,10 @@ import { Suspense, useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
 import { TOUCH, type PerspectiveCamera } from "three";
-import type { PlotState } from "../types";
+import { getGrowthStage, type PlotState } from "../types";
 import { FarmWorld } from "./FarmWorld";
 import { PlotBed } from "./PlotBed";
+import { WateringWorker } from "./WateringWorker";
 
 function useMobileFarmView() {
   const [mobile, setMobile] = useState(false);
@@ -44,16 +45,30 @@ export function FarmCanvas({
   plots,
   now,
   unlockCosts,
+  hasWorker,
+  workerPlotId,
   onTapPlot,
   onUnlockPlot,
 }: {
   plots: PlotState[];
   now: number;
   unlockCosts: number[];
+  hasWorker: boolean;
+  workerPlotId: string | null;
   onTapPlot: (plot: PlotState) => void;
   onUnlockPlot: (plot: PlotState, index: number) => void;
 }) {
   const mobile = useMobileFarmView();
+  const workerIndex =
+    workerPlotId == null
+      ? null
+      : plots.findIndex((p) => p.id === workerPlotId);
+  const workerPlot =
+    workerIndex != null && workerIndex >= 0 ? plots[workerIndex] : null;
+  const watering =
+    !!workerPlot &&
+    (getGrowthStage(workerPlot, now) === "seed" ||
+      getGrowthStage(workerPlot, now) === "sprout");
 
   return (
     <div className="fg-canvas">
@@ -77,7 +92,7 @@ export function FarmCanvas({
       >
         <Suspense fallback={null}>
           <MobileCameraRig mobile={mobile} />
-          <FarmWorld />
+          <FarmWorld hasWorker={hasWorker} />
           {plots.map((plot, index) => (
             <PlotBed
               key={plot.id}
@@ -89,6 +104,12 @@ export function FarmCanvas({
               onUnlock={() => onUnlockPlot(plot, index)}
             />
           ))}
+          {hasWorker && (
+            <WateringWorker
+              plotIndex={workerIndex != null && workerIndex >= 0 ? workerIndex : null}
+              watering={watering}
+            />
+          )}
           <ContactShadows
             position={[0, 0.01, 0]}
             opacity={mobile ? 0.28 : 0.4}

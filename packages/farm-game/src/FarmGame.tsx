@@ -10,6 +10,7 @@ import { loadSave, persistSave } from "@natan-games/game-core";
 import { farmReducer } from "./reducer";
 import {
   CROPS,
+  WORKER_COST,
   createInitialFarmState,
   getGrowthStage,
   SAVE_KEY,
@@ -64,6 +65,12 @@ export function FarmGame() {
     return () => window.clearTimeout(id);
   }, [toast]);
 
+  // Hired worker: water one empty field at a time, wait until growth finishes
+  useEffect(() => {
+    if (!hydrated || !state.hasWorker) return;
+    dispatch({ type: "WORKER_TICK", now });
+  }, [hydrated, state.hasWorker, state.workerPlotId, state.plots, now]);
+
   const flash = (message: string) => setToast(message);
 
   const goToMarket = () => {
@@ -117,6 +124,19 @@ export function FarmGame() {
     flash(`Sold all wheat (+${earned} coins)`);
   };
 
+  const buyWorker = () => {
+    if (state.hasWorker) {
+      flash("Worker already hired");
+      return;
+    }
+    if (state.wallet.coins < WORKER_COST) {
+      flash(`Need ${WORKER_COST} coins to hire a worker`);
+      return;
+    }
+    dispatch({ type: "BUY_WORKER" });
+    flash("Worker hired! They’ll water one field at a time");
+  };
+
   return (
     <div className={`fg-root fg-root--3d ${view === "market" ? "is-market" : ""}`}>
       <div className={`fg-farm-stage ${view === "market" ? "is-away" : ""}`}>
@@ -124,6 +144,8 @@ export function FarmGame() {
           plots={state.plots}
           now={now}
           unlockCosts={PLOT_UNLOCK_COSTS}
+          hasWorker={state.hasWorker}
+          workerPlotId={state.workerPlotId}
           onTapPlot={tapPlot}
           onUnlockPlot={unlockPlot}
         />
@@ -132,7 +154,9 @@ export function FarmGame() {
           <div className="fg-brand">
             <p className="fg-brand__mark">Sunny Acre</p>
             <p className="fg-brand__sub">
-              Water · Harvest · Sell · Expand
+              {state.hasWorker
+                ? "Worker watering · Harvest · Sell · Expand"
+                : "Water · Harvest · Sell · Expand"}
             </p>
           </div>
           <div className="fg-stats">
@@ -226,6 +250,34 @@ export function FarmGame() {
             >
               Sell all
             </button>
+          </div>
+
+          <div className={`fg-worker-offer ${state.hasWorker ? "is-hired" : ""}`}>
+            <span className="fg-worker-offer__emoji" aria-hidden>
+              🧑‍🌾
+            </span>
+            <div className="fg-worker-offer__copy">
+              <strong>{state.hasWorker ? "Worker hired" : "Hire a farmhand"}</strong>
+              <span>
+                {state.hasWorker
+                  ? "Waters one empty field at a time, then starts the next"
+                  : `Auto-waters empty fields · ${WORKER_COST} coins`}
+              </span>
+            </div>
+            {!state.hasWorker ? (
+              <button
+                type="button"
+                className="fg-market-btn fg-market-btn--worker"
+                disabled={state.wallet.coins < WORKER_COST}
+                onClick={buyWorker}
+              >
+                Buy
+                <span className="fg-stat__coin" aria-hidden />
+                {WORKER_COST}
+              </button>
+            ) : (
+              <span className="fg-worker-offer__badge">Active</span>
+            )}
           </div>
 
           <button
