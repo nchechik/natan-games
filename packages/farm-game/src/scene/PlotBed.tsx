@@ -184,7 +184,7 @@ function PlotMarker({
   useFrame((state) => {
     if (!group.current) return;
     const bob = Math.sin(state.clock.elapsedTime * 2.4) * 0.03;
-    if (stage === "empty") group.current.position.y = 1.05 + bob;
+    if (stage === "empty") group.current.position.y = 0.48 + bob;
     else if (stage === "grown") group.current.position.y = 1.25 + bob;
   });
 
@@ -204,7 +204,7 @@ function PlotMarker({
 
   if (stage === "empty") {
     return (
-      <group ref={group} position={[0, 1.05, 0]}>
+      <group ref={group} position={[0, 0.48, 0]}>
         <Billboard>
           <WateringCanIcon />
         </Billboard>
