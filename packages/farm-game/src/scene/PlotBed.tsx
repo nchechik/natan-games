@@ -67,13 +67,7 @@ function HarvestIcon({ tint }: { tint: string }) {
   );
 }
 
-function GrowthBar({
-  progress,
-  tint,
-}: {
-  progress: number;
-  tint: string;
-}) {
+function GrowthBar({ progress }: { progress: number }) {
   const fill = Math.max(0.04, Math.min(1, progress));
   return (
     <Billboard follow lockX={false} lockY={false} lockZ={false}>
@@ -89,7 +83,7 @@ function GrowthBar({
         </mesh>
         <mesh position={[-0.36 * (1 - fill), 0, 0.01]} scale={[fill, 1, 1]}>
           <planeGeometry args={[0.66, 0.08]} />
-          <meshStandardMaterial color={tint} depthWrite={false} />
+          <meshStandardMaterial color="#3dbe4a" depthWrite={false} />
         </mesh>
       </group>
     </Billboard>
@@ -153,8 +147,8 @@ function PlotMarker({
   }
 
   return (
-    <group position={[0, 1.2, 0]}>
-      <GrowthBar progress={progress} tint={cropTint ?? "#8fd16a"} />
+    <group position={[0, 0.42, 0]}>
+      <GrowthBar progress={progress} />
     </group>
   );
 }
