@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
 import { TOUCH, type PerspectiveCamera } from "three";
-import { getGrowthStage, type PlotState } from "../types";
+import type { HarvestJob, PlotState } from "../types";
 import { FarmWorld } from "./FarmWorld";
 import { PlotBed } from "./PlotBed";
 import { FarmHands } from "./FarmHands";
@@ -45,39 +45,41 @@ export function FarmCanvas({
   plots,
   now,
   unlockCosts,
-  hasWorker,
-  workerPlotId,
-  hasHarvester,
-  harvesterPlotId,
+  waterWorkers,
+  wateringPlotIds,
+  harvestWorkers,
+  harvestJobs,
   onTapPlot,
   onUnlockPlot,
 }: {
   plots: PlotState[];
   now: number;
   unlockCosts: number[];
-  hasWorker: boolean;
-  workerPlotId: string | null;
-  hasHarvester: boolean;
-  harvesterPlotId: string | null;
+  waterWorkers: number;
+  wateringPlotIds: string[];
+  harvestWorkers: number;
+  harvestJobs: HarvestJob[];
   onTapPlot: (plot: PlotState) => void;
   onUnlockPlot: (plot: PlotState, index: number) => void;
 }) {
   const mobile = useMobileFarmView();
 
-  const waterIndex =
-    workerPlotId == null ? null : plots.findIndex((p) => p.id === workerPlotId);
-  const waterPlot =
-    waterIndex != null && waterIndex >= 0 ? plots[waterIndex] : null;
-  const watering =
-    !!waterPlot &&
-    (getGrowthStage(waterPlot, now) === "seed" ||
-      getGrowthStage(waterPlot, now) === "sprout");
+  const wateringPlotIndexes = Array.from({ length: waterWorkers }, (_, i) => {
+    const id = wateringPlotIds[i];
+    if (!id) return null;
+    const idx = plots.findIndex((p) => p.id === id);
+    return idx >= 0 ? idx : null;
+  });
 
-  const harvestIndex =
-    harvesterPlotId == null
-      ? null
-      : plots.findIndex((p) => p.id === harvesterPlotId);
-  const harvesting = harvestIndex != null && harvestIndex >= 0;
+  const harvestingPlotIndexes = Array.from(
+    { length: harvestWorkers },
+    (_, i) => {
+      const job = harvestJobs[i];
+      if (!job) return null;
+      const idx = plots.findIndex((p) => p.id === job.plotId);
+      return idx >= 0 ? idx : null;
+    },
+  );
 
   return (
     <div className="fg-canvas">
@@ -101,7 +103,7 @@ export function FarmCanvas({
       >
         <Suspense fallback={null}>
           <MobileCameraRig mobile={mobile} />
-          <FarmWorld hasWorker={hasWorker || hasHarvester} />
+          <FarmWorld hasWorker={waterWorkers > 0 || harvestWorkers > 0} />
           {plots.map((plot, index) => (
             <PlotBed
               key={plot.id}
@@ -114,14 +116,10 @@ export function FarmCanvas({
             />
           ))}
           <FarmHands
-            hasWorker={hasWorker}
-            hasHarvester={hasHarvester}
-            waterPlotIndex={waterIndex != null && waterIndex >= 0 ? waterIndex : null}
-            watering={watering}
-            harvestPlotIndex={
-              harvestIndex != null && harvestIndex >= 0 ? harvestIndex : null
-            }
-            harvesting={harvesting}
+            waterWorkers={waterWorkers}
+            harvestWorkers={harvestWorkers}
+            wateringPlotIndexes={wateringPlotIndexes}
+            harvestingPlotIndexes={harvestingPlotIndexes}
           />
           <ContactShadows
             position={[0, 0.01, 0]}

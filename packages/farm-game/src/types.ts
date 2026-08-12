@@ -20,6 +20,11 @@ export interface PlotState {
   plantedAt: number | null;
 }
 
+export interface HarvestJob {
+  plotId: PlotId;
+  startedAt: number;
+}
+
 export interface FarmState {
   farmName: string;
   wallet: {
@@ -31,24 +36,31 @@ export interface FarmState {
   /** Harvested wheat waiting to be sold at market */
   wheat: number;
   plots: PlotState[];
-  /** Hired hand that auto-waters one empty field at a time */
-  hasWorker: boolean;
-  /** Plot the water worker is currently watering, if any */
-  workerPlotId: PlotId | null;
-  /** Hired hand that auto-harvests one ready field at a time */
-  hasHarvester: boolean;
-  /** Plot the harvester is currently working, if any */
-  harvesterPlotId: PlotId | null;
-  /** When the current harvest animation started */
-  harvesterStartedAt: number | null;
+  /** Number of hired water workers */
+  waterWorkers: number;
+  /** Plots currently being watered (one per busy water worker) */
+  wateringPlotIds: PlotId[];
+  /** Number of hired harvesters */
+  harvestWorkers: number;
+  /** Active harvest jobs (one per busy harvester) */
+  harvestJobs: HarvestJob[];
 }
 
-export const SAVE_KEY = "natan-games:farm:v4";
-export const SAVE_VERSION = 4;
+export const SAVE_KEY = "natan-games:farm:v5";
+export const SAVE_VERSION = 5;
 
 export const WORKER_COST = 100;
 export const HARVESTER_COST = 200;
 export const HARVEST_ANIM_MS = 1400;
+export const MAX_HANDS = 12;
+
+export function nextWaterWorkerCost(owned: number): number {
+  return WORKER_COST * (owned + 1);
+}
+
+export function nextHarvestWorkerCost(owned: number): number {
+  return HARVESTER_COST * (owned + 1);
+}
 
 /** Wheat is the starter crop; other defs remain for plant meshes if unlocked later */
 export const CROPS: Record<CropId, CropDef> = {
@@ -122,11 +134,10 @@ export function createInitialFarmState(): FarmState {
     },
     wheat: 0,
     plots,
-    hasWorker: false,
-    workerPlotId: null,
-    hasHarvester: false,
-    harvesterPlotId: null,
-    harvesterStartedAt: null,
+    waterWorkers: 0,
+    wateringPlotIds: [],
+    harvestWorkers: 0,
+    harvestJobs: [],
   };
 }
 

@@ -6,39 +6,62 @@ import { a, useSpring } from "@react-spring/three";
 import type { Group } from "three";
 import { plotPosition } from "./PlotBed";
 
-/** Front-of-field rest spot (umbrella + two chairs) */
-export const REST_CENTER: [number, number, number] = [0.15, 0, 3.55];
-export const WATER_SEAT: [number, number, number] = [-0.55, 0, 3.55];
-export const HARVEST_SEAT: [number, number, number] = [0.7, 0, 3.55];
+/** Behind-the-field rest spot (umbrella + chairs) */
+export const REST_CENTER: [number, number, number] = [0.1, 0, -3.45];
+
+export function waterSeat(index: number): [number, number, number] {
+  return [-0.55 - index * 0.58, 0, -3.35];
+}
+
+export function harvestSeat(index: number): [number, number, number] {
+  return [0.65 + index * 0.58, 0, -3.35];
+}
 
 const DROP_COUNT = 6;
 const HAND_SCALE = 0.58;
 
-function RestArea() {
+function RestArea({
+  waterSeats,
+  harvestSeats,
+}: {
+  waterSeats: number;
+  harvestSeats: number;
+}) {
   return (
     <group position={REST_CENTER}>
       {/* Pole */}
-      <mesh position={[0.08, 0.85, -0.15]} castShadow>
+      <mesh position={[0, 0.85, -0.2]} castShadow>
         <cylinderGeometry args={[0.04, 0.05, 1.7, 8]} />
         <meshStandardMaterial color="#8b5e3c" roughness={0.85} />
       </mesh>
       {/* Umbrella canopy */}
-      <mesh position={[0.08, 1.72, -0.15]} castShadow>
-        <coneGeometry args={[1.05, 0.45, 10]} />
+      <mesh position={[0, 1.72, -0.2]} castShadow>
+        <coneGeometry args={[1.15, 0.45, 10]} />
         <meshStandardMaterial color="#e85a4a" roughness={0.7} />
       </mesh>
-      <mesh position={[0.08, 1.55, -0.15]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[1.02, 0.12, 10]} />
+      <mesh position={[0, 1.55, -0.2]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[1.12, 0.12, 10]} />
         <meshStandardMaterial color="#c44538" roughness={0.75} />
       </mesh>
-      {/* Tip */}
-      <mesh position={[0.08, 1.98, -0.15]}>
+      <mesh position={[0, 1.98, -0.2]}>
         <sphereGeometry args={[0.05, 8, 8]} />
         <meshStandardMaterial color="#f0c040" roughness={0.5} metalness={0.2} />
       </mesh>
 
-      <Chair position={[-0.7, 0, 0.12]} rotation={0.15} />
-      <Chair position={[0.55, 0, 0.12]} rotation={-0.1} />
+      {Array.from({ length: Math.max(1, waterSeats) }, (_, i) => (
+        <Chair
+          key={`w-${i}`}
+          position={[-0.65 - i * 0.58, 0, 0.2]}
+          rotation={Math.PI + 0.12}
+        />
+      ))}
+      {Array.from({ length: Math.max(1, harvestSeats) }, (_, i) => (
+        <Chair
+          key={`h-${i}`}
+          position={[0.55 + i * 0.58, 0, 0.2]}
+          rotation={Math.PI - 0.1}
+        />
+      ))}
     </group>
   );
 }
@@ -233,17 +256,20 @@ const HARVEST_OUTFIT: Outfit = {
 export function WateringWorker({
   plotIndex,
   watering,
+  seatIndex,
 }: {
   plotIndex: number | null;
   watering: boolean;
+  seatIndex: number;
 }) {
   const working = watering && plotIndex != null;
+  const seat = waterSeat(seatIndex);
   const target = working
     ? (() => {
         const [x, , z] = plotPosition(plotIndex!);
         return [x - 0.88, 0, z + 0.05] as [number, number, number];
       })()
-    : WATER_SEAT;
+    : seat;
 
   const { posX, posZ, sit } = useSpring({
     posX: target[0],
@@ -280,7 +306,7 @@ export function WateringWorker({
 
   return (
     <a.group position-x={posX} position-y={0} position-z={posZ} scale={HAND_SCALE}>
-      <group rotation={[0, working ? 0.85 : -0.2, 0]}>
+      <group rotation={[0, working ? 0.85 : Math.PI - 0.15, 0]}>
         <a.group position-y={sit.to((v) => v * 0.12)}>
           <MiniFarmerBody
             outfit={WATER_OUTFIT}
@@ -313,17 +339,20 @@ export function WateringWorker({
 export function HarvestingWorker({
   plotIndex,
   harvesting,
+  seatIndex,
 }: {
   plotIndex: number | null;
   harvesting: boolean;
+  seatIndex: number;
 }) {
   const working = harvesting && plotIndex != null;
+  const seat = harvestSeat(seatIndex);
   const target = working
     ? (() => {
         const [x, , z] = plotPosition(plotIndex!);
         return [x + 0.88, 0, z + 0.05] as [number, number, number];
       })()
-    : HARVEST_SEAT;
+    : seat;
 
   const { posX, posZ } = useSpring({
     posX: target[0],
@@ -347,7 +376,7 @@ export function HarvestingWorker({
 
   return (
     <a.group position-x={posX} position-y={0} position-z={posZ} scale={HAND_SCALE}>
-      <group rotation={[0, working ? -0.85 : 0.25, 0]}>
+      <group rotation={[0, working ? -0.85 : Math.PI + 0.2, 0]}>
         <group position={[0, working ? 0 : 0.12, 0]}>
           <MiniFarmerBody
             outfit={HARVEST_OUTFIT}
@@ -362,34 +391,37 @@ export function HarvestingWorker({
 }
 
 export function FarmHands({
-  hasWorker,
-  hasHarvester,
-  waterPlotIndex,
-  watering,
-  harvestPlotIndex,
-  harvesting,
+  waterWorkers,
+  harvestWorkers,
+  wateringPlotIndexes,
+  harvestingPlotIndexes,
 }: {
-  hasWorker: boolean;
-  hasHarvester: boolean;
-  waterPlotIndex: number | null;
-  watering: boolean;
-  harvestPlotIndex: number | null;
-  harvesting: boolean;
+  waterWorkers: number;
+  harvestWorkers: number;
+  wateringPlotIndexes: (number | null)[];
+  harvestingPlotIndexes: (number | null)[];
 }) {
-  if (!hasWorker && !hasHarvester) return null;
+  if (waterWorkers <= 0 && harvestWorkers <= 0) return null;
 
   return (
     <group>
-      <RestArea />
-      {hasWorker && (
-        <WateringWorker plotIndex={waterPlotIndex} watering={watering} />
-      )}
-      {hasHarvester && (
-        <HarvestingWorker
-          plotIndex={harvestPlotIndex}
-          harvesting={harvesting}
+      <RestArea waterSeats={waterWorkers} harvestSeats={harvestWorkers} />
+      {Array.from({ length: waterWorkers }, (_, i) => (
+        <WateringWorker
+          key={`water-${i}`}
+          seatIndex={i}
+          plotIndex={wateringPlotIndexes[i] ?? null}
+          watering={wateringPlotIndexes[i] != null}
         />
-      )}
+      ))}
+      {Array.from({ length: harvestWorkers }, (_, i) => (
+        <HarvestingWorker
+          key={`harvest-${i}`}
+          seatIndex={i}
+          plotIndex={harvestingPlotIndexes[i] ?? null}
+          harvesting={harvestingPlotIndexes[i] != null}
+        />
+      ))}
     </group>
   );
 }
