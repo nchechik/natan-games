@@ -1,6 +1,8 @@
 .page {
   min-height: 100vh;
-  background: #7ec8e8;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #b8e8ff 0%, transparent 55%),
+    linear-gradient(180deg, #87ceeb 0%, #a8dce8 40%, #c8e8a0 100%);
 }
 
 .bar {
@@ -8,9 +10,13 @@
   top: 0;
   z-index: 5;
   padding: 0.65rem 1.25rem;
-  background: rgba(255, 250, 235, 0.72);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 248, 230, 0.88),
+    rgba(255, 240, 200, 0.72)
+  );
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(92, 61, 46, 0.12);
+  border-bottom: 2px solid rgba(107, 68, 35, 0.14);
 }
 
 .back {

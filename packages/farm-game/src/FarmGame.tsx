@@ -134,23 +134,24 @@ export function FarmGame() {
       <header className="fg-hud">
         <div className="fg-brand">
           <p className="fg-brand__mark">Sunny Acre</p>
-          <p className="fg-brand__sub">3D Farm · Level {state.wallet.level}</p>
+          <p className="fg-brand__sub">
+            Farm Level {state.wallet.level}
+            <span className="fg-brand__dot" aria-hidden />
+            Orbit to look around
+          </p>
         </div>
         <div className="fg-stats">
           <div className="fg-stat" title="Coins">
-            <span className="fg-stat__icon" aria-hidden>
-              ●
-            </span>
+            <span className="fg-stat__coin" aria-hidden />
             <span>{state.wallet.coins}</span>
           </div>
           <div className="fg-stat fg-stat--gem" title="Gems">
-            <span className="fg-stat__icon" aria-hidden>
-              ◆
-            </span>
+            <span className="fg-stat__gem" aria-hidden />
             <span>{state.wallet.gems}</span>
           </div>
           <div className="fg-stat fg-stat--xp" title="Experience">
-            <span>XP {state.wallet.xp}</span>
+            <span className="fg-stat__xp-label">XP</span>
+            <span>{state.wallet.xp}</span>
           </div>
         </div>
       </header>
@@ -228,7 +229,7 @@ export function FarmGame() {
                 })}
               </div>
               <p className="fg-hint">
-                Drag to orbit · click soil to plant · harvest when crops glow
+                Tap a field to plant · harvest when crops sparkle · expand locked beds with coins
               </p>
             </section>
 

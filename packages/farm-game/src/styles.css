@@ -1,23 +1,23 @@
 .fg-root {
-  --fg-soil: #6b4423;
-  --fg-soil-light: #8a5a32;
-  --fg-grass: #3f7a3a;
-  --fg-leaf: #5fa85a;
-  --fg-sky-top: #7ec8e8;
-  --fg-sky-mid: #b8dff0;
-  --fg-sky-low: #e8f4c8;
-  --fg-ink: #1f2a1c;
-  --fg-panel: rgba(255, 250, 235, 0.9);
-  --fg-gold: #e8b84a;
+  --fg-soil: #7a4a28;
+  --fg-soil-light: #9a6035;
+  --fg-grass: #4caf50;
+  --fg-leaf: #66bb6a;
+  --fg-sky: #87ceeb;
+  --fg-ink: #1e3220;
+  --fg-panel: rgba(255, 248, 230, 0.94);
+  --fg-gold: #f0c040;
   --fg-gem: #3eb7b0;
-  --fg-wood: #5c3d2e;
-  --fg-wood-light: #8b5e3c;
-  --fg-shadow: rgba(31, 42, 28, 0.18);
+  --fg-barn: #d6453d;
+  --fg-wood: #6b4423;
+  --fg-wood-light: #a07040;
+  --fg-cream: #fff8e8;
+  --fg-shadow: rgba(30, 50, 32, 0.2);
 
   position: relative;
   min-height: 100%;
   color: var(--fg-ink);
-  font-family: "Nunito", "Trebuchet MS", sans-serif;
+  font-family: var(--font-body), "Nunito", "Trebuchet MS", sans-serif;
   overflow: hidden;
   isolation: isolate;
 }
@@ -49,7 +49,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.1rem 1.25rem 0.5rem;
+  padding: 1rem 1.2rem 0.5rem;
   pointer-events: none;
 }
 
@@ -59,29 +59,42 @@
 
 .fg-brand__mark {
   margin: 0;
-  font-family: "Fredoka", "Nunito", sans-serif;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-family: var(--font-display), "Fredoka", sans-serif;
+  font-size: clamp(1.9rem, 4.2vw, 2.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: #23401f;
+  color: #1f4a22;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.55),
-    0 8px 24px rgba(126, 200, 232, 0.45);
+    0 2px 0 rgba(255, 255, 255, 0.65),
+    0 10px 28px rgba(76, 175, 80, 0.35);
   animation: fg-brand-in 700ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 
 .fg-brand__sub {
-  margin: 0.25rem 0 0;
-  font-size: 0.95rem;
-  opacity: 0.8;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  margin: 0.35rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2f5a32;
+  opacity: 0.85;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.fg-brand__dot {
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: #d6453d;
+  box-shadow: 0 0 0 2px rgba(214, 69, 61, 0.2);
 }
 
 .fg-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.45rem;
   justify-content: flex-end;
 }
 
@@ -89,28 +102,52 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  min-width: 4.5rem;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(255, 252, 240, 0.88);
-  border: 2px solid rgba(92, 61, 46, 0.18);
-  box-shadow: 0 4px 0 rgba(92, 61, 46, 0.12);
+  min-width: 4.6rem;
+  padding: 0.42rem 0.8rem 0.42rem 0.5rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(180deg, #fffdf5 0%, #fff0d0 100%);
+  border: 2.5px solid rgba(107, 68, 35, 0.28);
+  box-shadow:
+    0 4px 0 rgba(107, 68, 35, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  backdrop-filter: blur(8px);
 }
 
-.fg-stat__icon {
-  color: var(--fg-gold);
-  font-size: 0.85rem;
+.fg-stat__coin,
+.fg-stat__gem {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
 }
 
-.fg-stat--gem .fg-stat__icon {
-  color: var(--fg-gem);
+.fg-stat__coin {
+  background: radial-gradient(circle at 35% 30%, #ffe08a, #e8b020 55%, #c49010);
+  border: 2px solid #b8871f;
+}
+
+.fg-stat__gem {
+  background: radial-gradient(circle at 35% 30%, #9ef0e8, #2aa8a0 60%, #1a7a74);
+  border: 2px solid #1f8a82;
+  border-radius: 0.35rem;
+  transform: rotate(45deg) scale(0.85);
 }
 
 .fg-stat--xp {
-  background: rgba(94, 168, 90, 0.22);
+  background: linear-gradient(180deg, #e8f8d8 0%, #c8e8a0 100%);
+  border-color: rgba(61, 122, 50, 0.35);
+}
+
+.fg-stat__xp-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #3d7a32;
+  background: rgba(61, 122, 50, 0.12);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.45rem;
 }
 
 .fg-panel--overlay {
@@ -151,16 +188,15 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.55rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(255, 252, 240, 0.92);
-  border: 2px solid rgba(92, 61, 46, 0.16);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #fffdf5, #ffe8b8);
+  border: 2.5px solid rgba(107, 68, 35, 0.28);
   box-shadow: 0 8px 18px var(--fg-shadow);
-  backdrop-filter: blur(10px);
 }
 
 .fg-panel__title {
   margin: 0;
-  font-family: "Fredoka", "Nunito", sans-serif;
+  font-family: var(--font-display), "Fredoka", sans-serif;
   font-size: 0.95rem;
   font-weight: 650;
   color: var(--fg-wood);
@@ -171,19 +207,19 @@
   align-items: center;
   gap: 0.35rem;
   border: 0;
-  background: rgba(79, 143, 69, 0.14);
+  background: rgba(76, 175, 80, 0.18);
   color: #2f5f2c;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
   cursor: pointer;
   padding: 0.35rem 0.65rem;
-  border-radius: 999px;
+  border-radius: 0.75rem;
   transition: transform 120ms ease, background 120ms ease;
 }
 
 .fg-bag-collapse:hover {
-  background: rgba(79, 143, 69, 0.24);
+  background: rgba(76, 175, 80, 0.28);
   transform: translateY(-1px);
 }
 
@@ -193,11 +229,12 @@
   gap: 0.65rem;
   width: 100%;
   padding: 0.65rem 0.85rem;
-  border: 2px solid rgba(92, 61, 46, 0.16);
-  border-radius: 999px;
-  background: rgba(255, 252, 240, 0.94);
-  box-shadow: 0 10px 24px var(--fg-shadow);
-  backdrop-filter: blur(10px);
+  border: 2.5px solid rgba(107, 68, 35, 0.28);
+  border-radius: 1.15rem;
+  background: linear-gradient(180deg, #fffdf5 0%, #ffe8b8 100%);
+  box-shadow:
+    0 10px 24px var(--fg-shadow),
+    0 4px 0 rgba(107, 68, 35, 0.15);
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -207,18 +244,22 @@
 
 .fg-bag-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px var(--fg-shadow);
+  box-shadow:
+    0 14px 28px var(--fg-shadow),
+    0 5px 0 rgba(107, 68, 35, 0.15);
 }
 
 .fg-bag-toggle__emoji {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 999px;
-  background: rgba(143, 209, 106, 0.28);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(160deg, #c8f090, #7ec850);
+  border: 2px solid rgba(61, 122, 50, 0.25);
   font-size: 1.35rem;
   flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .fg-bag-toggle__copy {
@@ -229,7 +270,7 @@
 }
 
 .fg-bag-toggle__copy strong {
-  font-family: "Fredoka", "Nunito", sans-serif;
+  font-family: var(--font-display), "Fredoka", sans-serif;
   font-size: 1rem;
   color: var(--fg-wood);
 }
@@ -252,20 +293,22 @@
   margin: 0.75rem 0 0;
   font-size: 0.85rem;
   opacity: 0.72;
+  line-height: 1.35;
 }
 
 .fg-section {
   padding: 0.95rem 1rem 1.05rem;
-  border-radius: 1.15rem;
+  border-radius: 1.2rem;
   background: var(--fg-panel);
-  border: 2px solid rgba(92, 61, 46, 0.16);
-  box-shadow: 0 10px 24px var(--fg-shadow);
-  backdrop-filter: blur(10px);
+  border: 2.5px solid rgba(107, 68, 35, 0.22);
+  box-shadow:
+    0 10px 24px var(--fg-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .fg-section h2 {
   margin: 0 0 0.75rem;
-  font-family: "Fredoka", "Nunito", sans-serif;
+  font-family: var(--font-display), "Fredoka", sans-serif;
   font-size: 1.15rem;
   font-weight: 650;
   color: var(--fg-wood);
@@ -311,9 +354,9 @@
   justify-items: center;
   gap: 0.15rem;
   padding: 0.55rem 0.35rem;
-  border-radius: 0.9rem;
+  border-radius: 0.95rem;
   border: 2px solid transparent;
-  background: rgba(143, 209, 106, 0.14);
+  background: rgba(76, 175, 80, 0.12);
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -322,13 +365,13 @@
 
 .fg-crop:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: rgba(143, 209, 106, 0.28);
+  background: rgba(76, 175, 80, 0.22);
 }
 
 .fg-crop.is-selected {
-  border-color: #4f8f45;
-  background: rgba(143, 209, 106, 0.35);
-  box-shadow: 0 0 0 3px rgba(79, 143, 69, 0.18);
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.28);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
 .fg-crop.is-locked,
@@ -368,7 +411,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.55rem 0.15rem;
-  border-bottom: 1px dashed rgba(92, 61, 46, 0.16);
+  border-bottom: 1px dashed rgba(107, 68, 35, 0.18);
 }
 
 .fg-market__row:last-child {
@@ -395,20 +438,20 @@
 
 .fg-market__actions button {
   border: 0;
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   padding: 0.4rem 0.65rem;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
   cursor: pointer;
-  background: #4f8f45;
+  background: linear-gradient(180deg, #6bc96b, #3d9a45);
   color: #f7ffe8;
-  box-shadow: 0 3px 0 #2f5f2c;
+  box-shadow: 0 3px 0 #2f6b35;
   transition: transform 120ms ease;
 }
 
 .fg-market__actions button:last-child {
-  background: var(--fg-gold);
+  background: linear-gradient(180deg, #ffd060, #e8b020);
   color: #3b2a08;
   box-shadow: 0 3px 0 #b8871f;
 }
@@ -434,27 +477,29 @@
   bottom: 1.4rem;
   transform: translateX(-50%);
   z-index: 20;
-  padding: 0.7rem 1.1rem;
-  border-radius: 999px;
-  background: rgba(31, 42, 28, 0.92);
+  padding: 0.7rem 1.15rem;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #2a4030, #1a2a20);
   color: #f4ffe8;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(232, 200, 106, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
   animation: fg-toast-in 280ms ease both;
   max-width: min(90vw, 28rem);
   text-align: center;
 }
 
 .fg-plot-tip {
-  padding: 0.28rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(31, 42, 28, 0.88);
+  padding: 0.32rem 0.65rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 50, 32, 0.9);
   color: #f4ffe8;
-  font-family: "Nunito", "Trebuchet MS", sans-serif;
+  font-family: var(--font-body), "Nunito", sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid rgba(232, 200, 106, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
   pointer-events: none;
   user-select: none;
 }

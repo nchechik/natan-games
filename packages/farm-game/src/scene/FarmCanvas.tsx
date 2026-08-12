@@ -25,10 +25,10 @@ export function FarmCanvas({
       <Canvas
         shadows
         dpr={[1, 1.75]}
-        camera={{ position: [6.5, 7.5, 8.5], fov: 42, near: 0.1, far: 80 }}
+        camera={{ position: [9.5, 11.5, 9.5], fov: 36, near: 0.1, far: 90 }}
         gl={{ antialias: true, alpha: false }}
         onCreated={({ gl }) => {
-          gl.setClearColor("#7ec8e8");
+          gl.setClearColor("#87ceeb");
         }}
       >
         <Suspense fallback={null}>
@@ -46,19 +46,21 @@ export function FarmCanvas({
           ))}
           <ContactShadows
             position={[0, 0.01, 0]}
-            opacity={0.35}
-            scale={16}
-            blur={2.5}
-            far={8}
+            opacity={0.4}
+            scale={20}
+            blur={2.8}
+            far={10}
           />
           <OrbitControls
             makeDefault
             enablePan={false}
-            minPolarAngle={0.35}
-            maxPolarAngle={1.25}
-            minDistance={6}
-            maxDistance={16}
-            target={[0, 0.4, 0]}
+            minPolarAngle={0.42}
+            maxPolarAngle={1.05}
+            minAzimuthAngle={-0.85}
+            maxAzimuthAngle={0.85}
+            minDistance={8}
+            maxDistance={18}
+            target={[0, 0.5, 0.2]}
             enableDamping
             dampingFactor={0.08}
           />

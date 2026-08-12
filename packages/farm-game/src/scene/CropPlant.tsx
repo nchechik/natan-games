@@ -8,29 +8,30 @@ import { CROPS } from "../types";
 
 const STAGE_SCALE: Record<GrowthStage, number> = {
   empty: 0,
-  seed: 0.28,
-  sprout: 0.68,
+  seed: 0.32,
+  sprout: 0.72,
   grown: 1,
   wilted: 0.45,
 };
 
-/** Stalk offsets for a natural wheat clump */
 const WHEAT_STALKS = [
   { x: 0, z: 0, h: 1, lean: 0, twist: 0 },
-  { x: 0.14, z: 0.08, h: 0.92, lean: 0.12, twist: 0.4 },
-  { x: -0.13, z: 0.1, h: 0.88, lean: -0.1, twist: -0.5 },
-  { x: 0.1, z: -0.12, h: 0.95, lean: 0.08, twist: 0.8 },
-  { x: -0.11, z: -0.09, h: 0.9, lean: -0.14, twist: -0.3 },
-  { x: 0.02, z: 0.18, h: 0.84, lean: 0.06, twist: 1.1 },
-  { x: -0.04, z: -0.18, h: 0.86, lean: -0.05, twist: -1.0 },
+  { x: 0.13, z: 0.09, h: 0.94, lean: 0.1, twist: 0.4 },
+  { x: -0.12, z: 0.1, h: 0.9, lean: -0.1, twist: -0.5 },
+  { x: 0.1, z: -0.11, h: 0.96, lean: 0.08, twist: 0.8 },
+  { x: -0.1, z: -0.09, h: 0.91, lean: -0.12, twist: -0.3 },
+  { x: 0.02, z: 0.17, h: 0.86, lean: 0.06, twist: 1.1 },
+  { x: -0.03, z: -0.16, h: 0.88, lean: -0.05, twist: -1.0 },
+  { x: 0.18, z: 0.02, h: 0.85, lean: 0.14, twist: 0.2 },
+  { x: -0.17, z: 0.0, h: 0.87, lean: -0.11, twist: -0.6 },
 ] as const;
 
 function WheatEar({ tint, y }: { tint: string; y: number }) {
   const grains = useMemo(
     () =>
-      Array.from({ length: 9 }, (_, i) => ({
-        y: i * 0.045,
-        scale: 1 - i * 0.05,
+      Array.from({ length: 8 }, (_, i) => ({
+        y: i * 0.042,
+        scale: 1 - i * 0.048,
         rot: i * 0.55,
       })),
     [],
@@ -40,36 +41,19 @@ function WheatEar({ tint, y }: { tint: string; y: number }) {
     <group position={[0, y, 0]}>
       {grains.map((g, i) => (
         <group key={i} position={[0, g.y, 0]} rotation={[0, g.rot, 0]}>
-          <mesh position={[0.028, 0, 0]} scale={[g.scale, g.scale, g.scale]} castShadow>
-            <sphereGeometry args={[0.032, 8, 8]} />
-            <meshStandardMaterial color={tint} roughness={0.55} />
+          <mesh position={[0.026, 0, 0]} scale={g.scale} castShadow>
+            <sphereGeometry args={[0.03, 7, 7]} />
+            <meshStandardMaterial color={tint} roughness={0.5} />
           </mesh>
-          <mesh position={[-0.028, 0, 0]} scale={[g.scale, g.scale, g.scale]} castShadow>
-            <sphereGeometry args={[0.032, 8, 8]} />
-            <meshStandardMaterial color={tint} roughness={0.55} />
-          </mesh>
-          {/* awn / bristle */}
-          <mesh
-            position={[0.04, 0.02, 0]}
-            rotation={[0, 0, 0.55]}
-            scale={[g.scale, g.scale, g.scale]}
-          >
-            <cylinderGeometry args={[0.004, 0.002, 0.16, 4]} />
-            <meshStandardMaterial color="#c9a24a" roughness={0.7} />
-          </mesh>
-          <mesh
-            position={[-0.04, 0.02, 0]}
-            rotation={[0, 0, -0.55]}
-            scale={[g.scale, g.scale, g.scale]}
-          >
-            <cylinderGeometry args={[0.004, 0.002, 0.16, 4]} />
-            <meshStandardMaterial color="#c9a24a" roughness={0.7} />
+          <mesh position={[-0.026, 0, 0]} scale={g.scale} castShadow>
+            <sphereGeometry args={[0.03, 7, 7]} />
+            <meshStandardMaterial color={tint} roughness={0.5} />
           </mesh>
         </group>
       ))}
-      <mesh position={[0, 0.38, 0]}>
-        <coneGeometry args={[0.02, 0.08, 5]} />
-        <meshStandardMaterial color={tint} roughness={0.6} />
+      <mesh position={[0, 0.34, 0]}>
+        <coneGeometry args={[0.018, 0.07, 5]} />
+        <meshStandardMaterial color={tint} roughness={0.55} />
       </mesh>
     </group>
   );
@@ -90,30 +74,20 @@ function WheatStalk({
   lean: number;
   twist: number;
 }) {
-  const stemH = 0.78 * h;
+  const stemH = 0.72 * h;
   return (
-    <group position={[x, 0, z]} rotation={[lean * 0.35, twist, lean]}>
-      {/* stem */}
+    <group position={[x, 0, z]} rotation={[lean * 0.32, twist, lean]}>
       <mesh position={[0, stemH / 2, 0]} castShadow>
-        <cylinderGeometry args={[0.014, 0.022, stemH, 6]} />
-        <meshStandardMaterial color="#6fa04a" roughness={0.85} />
+        <cylinderGeometry args={[0.012, 0.02, stemH, 5]} />
+        <meshStandardMaterial color="#7ab04a" roughness={0.85} />
       </mesh>
-      {/* leaf blades */}
       <mesh
-        position={[0.05, stemH * 0.35, 0]}
-        rotation={[0.15, 0.2, 0.85]}
+        position={[0.045, stemH * 0.35, 0]}
+        rotation={[0.15, 0.2, 0.9]}
         castShadow
       >
-        <boxGeometry args={[0.22, 0.012, 0.045]} />
+        <boxGeometry args={[0.18, 0.01, 0.04]} />
         <meshStandardMaterial color="#5f9a42" roughness={0.9} />
-      </mesh>
-      <mesh
-        position={[-0.045, stemH * 0.55, 0.02]}
-        rotation={[-0.1, -0.3, -0.95]}
-        castShadow
-      >
-        <boxGeometry args={[0.18, 0.01, 0.038]} />
-        <meshStandardMaterial color="#4f8f3a" roughness={0.9} />
       </mesh>
       <WheatEar tint={tint} y={stemH} />
     </group>
@@ -130,71 +104,144 @@ function WheatCrop({ tint }: { tint: string }) {
   );
 }
 
+/** Tall corn with bright yellow ears — Hay Day style */
 function CornCrop({ tint }: { tint: string }) {
   return (
     <group>
-      <mesh position={[0, 0.55, 0]}>
-        <cylinderGeometry args={[0.04, 0.055, 1.1, 6]} />
-        <meshStandardMaterial color="#4f8f3a" roughness={0.8} />
-      </mesh>
-      <mesh position={[0.08, 0.7, 0]} rotation={[0, 0, 0.35]}>
-        <boxGeometry args={[0.28, 0.02, 0.12]} />
-        <meshStandardMaterial color="#6db35a" roughness={0.9} />
-      </mesh>
-      <mesh position={[-0.08, 0.55, 0]} rotation={[0, 0, -0.4]}>
-        <boxGeometry args={[0.26, 0.02, 0.1]} />
-        <meshStandardMaterial color="#6db35a" roughness={0.9} />
-      </mesh>
-      <mesh position={[0.06, 0.62, 0.02]}>
-        <capsuleGeometry args={[0.07, 0.22, 4, 8]} />
-        <meshStandardMaterial color={tint} roughness={0.55} />
-      </mesh>
+      {[
+        { x: -0.16, z: 0.08 },
+        { x: 0.14, z: -0.06 },
+        { x: 0.02, z: 0.16 },
+      ].map((p, i) => (
+        <group key={i} position={[p.x, 0, p.z]}>
+          <mesh position={[0, 0.58, 0]} castShadow>
+            <cylinderGeometry args={[0.035, 0.05, 1.15, 6]} />
+            <meshStandardMaterial color="#3d9a3a" roughness={0.8} />
+          </mesh>
+          {/* Leaves */}
+          <mesh position={[0.1, 0.75, 0]} rotation={[0, 0.2, 0.55]} castShadow>
+            <boxGeometry args={[0.32, 0.02, 0.12]} />
+            <meshStandardMaterial color="#52b35a" roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.1, 0.55, 0]} rotation={[0, -0.2, -0.5]} castShadow>
+            <boxGeometry args={[0.28, 0.02, 0.1]} />
+            <meshStandardMaterial color="#4caf50" roughness={0.9} />
+          </mesh>
+          <mesh position={[0.08, 0.95, 0.04]} rotation={[0.1, 0, 0.4]} castShadow>
+            <boxGeometry args={[0.24, 0.015, 0.09]} />
+            <meshStandardMaterial color="#66bb6a" roughness={0.9} />
+          </mesh>
+          {/* Corn ears */}
+          <mesh position={[0.08, 0.65, 0.04]} castShadow>
+            <capsuleGeometry args={[0.055, 0.2, 4, 8]} />
+            <meshStandardMaterial color={tint} roughness={0.5} />
+          </mesh>
+          <mesh position={[-0.06, 0.78, -0.03]} castShadow>
+            <capsuleGeometry args={[0.05, 0.16, 4, 8]} />
+            <meshStandardMaterial color="#f5d060" roughness={0.5} />
+          </mesh>
+          {/* Silk tops */}
+          <mesh position={[0.08, 0.82, 0.04]}>
+            <coneGeometry args={[0.03, 0.1, 5]} />
+            <meshStandardMaterial color="#c9e86a" roughness={0.7} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
 
+/** Carrot tops — bushy plumes above soil like the reference */
 function CarrotCrop({ tint }: { tint: string }) {
   return (
     <group>
-      <mesh position={[0, 0.18, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[0.12, 0.42, 8]} />
-        <meshStandardMaterial color={tint} roughness={0.65} />
-      </mesh>
-      {[0, 1, 2].map((i) => (
-        <mesh
-          key={i}
-          position={[Math.cos(i * 2.1) * 0.05, 0.42, Math.sin(i * 2.1) * 0.05]}
-          rotation={[0.2, i, 0.15]}
-        >
-          <coneGeometry args={[0.03, 0.28, 5]} />
-          <meshStandardMaterial color="#3f9a45" roughness={0.85} />
-        </mesh>
+      {[
+        [-0.18, 0.12],
+        [0.16, 0.08],
+        [0.0, -0.14],
+        [-0.08, 0.0],
+        [0.12, -0.1],
+      ].map(([x, z], i) => (
+        <group key={i} position={[x, 0, z]}>
+          {/* Partially visible orange shoulder */}
+          <mesh position={[0, 0.06, 0]} castShadow>
+            <sphereGeometry args={[0.07, 10, 10]} />
+            <meshStandardMaterial color={tint} roughness={0.6} />
+          </mesh>
+          {/* Bushy leafy plume */}
+          {[0, 1, 2, 3].map((j) => (
+            <mesh
+              key={j}
+              position={[
+                Math.cos(j * 1.6) * 0.04,
+                0.22 + (j % 2) * 0.06,
+                Math.sin(j * 1.6) * 0.04,
+              ]}
+              rotation={[0.25, j, 0.2 + j * 0.15]}
+              castShadow
+            >
+              <coneGeometry args={[0.035, 0.32, 5]} />
+              <meshStandardMaterial
+                color={j % 2 ? "#3d9a45" : "#2e8b3a"}
+                roughness={0.85}
+              />
+            </mesh>
+          ))}
+        </group>
       ))}
     </group>
   );
 }
 
+/** Tomatoes on stakes — vertical vines with bright red fruit */
 function TomatoCrop({ tint }: { tint: string }) {
   return (
     <group>
-      <mesh position={[0, 0.35, 0]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.7, 6]} />
-        <meshStandardMaterial color="#3d7a32" roughness={0.85} />
+      {/* Stake */}
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <cylinderGeometry args={[0.025, 0.03, 1.1, 6]} />
+        <meshStandardMaterial color="#8b5e3c" roughness={0.85} />
       </mesh>
+      {/* Vine */}
+      <mesh position={[0.02, 0.5, 0]} castShadow>
+        <cylinderGeometry args={[0.02, 0.03, 0.95, 6]} />
+        <meshStandardMaterial color="#2e7a32" roughness={0.85} />
+      </mesh>
+      {/* Leaves */}
       {[
-        [0.12, 0.45, 0.05],
-        [-0.1, 0.55, -0.06],
-        [0.02, 0.68, 0.1],
-      ].map(([x, y, z], i) => (
-        <mesh key={i} position={[x, y, z]}>
-          <sphereGeometry args={[0.1, 12, 12]} />
-          <meshStandardMaterial color={tint} roughness={0.45} />
+        [0.14, 0.4, 0.05, 0.5],
+        [-0.12, 0.55, -0.04, -0.55],
+        [0.1, 0.75, 0.08, 0.4],
+        [-0.08, 0.9, -0.06, -0.35],
+      ].map(([x, y, z, rot], i) => (
+        <mesh
+          key={i}
+          position={[x, y, z]}
+          rotation={[0.2, 0, rot]}
+          castShadow
+        >
+          <boxGeometry args={[0.2, 0.015, 0.1]} />
+          <meshStandardMaterial color="#4caf50" roughness={0.9} />
         </mesh>
       ))}
-      <mesh position={[0.16, 0.5, -0.08]} rotation={[0.4, 0.2, 0.5]}>
-        <boxGeometry args={[0.22, 0.015, 0.1]} />
-        <meshStandardMaterial color="#5fa85a" roughness={0.9} />
-      </mesh>
+      {/* Tomatoes */}
+      {[
+        [0.12, 0.45, 0.06],
+        [-0.1, 0.58, -0.05],
+        [0.08, 0.72, 0.1],
+        [-0.06, 0.88, 0.04],
+        [0.02, 0.62, -0.1],
+      ].map(([x, y, z], i) => (
+        <mesh key={i} position={[x, y, z]} castShadow>
+          <sphereGeometry args={[0.09, 12, 12]} />
+          <meshStandardMaterial
+            color={i % 2 ? tint : "#e85545"}
+            roughness={0.4}
+            emissive={tint}
+            emissiveIntensity={0.08}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -202,32 +249,80 @@ function TomatoCrop({ tint }: { tint: string }) {
 function PumpkinCrop({ tint }: { tint: string }) {
   return (
     <group>
-      <mesh position={[0, 0.28, 0]} scale={[1, 0.78, 1]}>
-        <sphereGeometry args={[0.32, 16, 16]} />
-        <meshStandardMaterial color={tint} roughness={0.55} />
+      <mesh position={[0, 0.26, 0]} scale={[1.05, 0.78, 1]} castShadow>
+        <sphereGeometry args={[0.3, 16, 16]} />
+        <meshStandardMaterial color={tint} roughness={0.5} />
       </mesh>
-      <mesh position={[0, 0.52, 0]}>
-        <cylinderGeometry args={[0.035, 0.04, 0.14, 6]} />
+      {/* Rib suggestion */}
+      {[-0.12, 0, 0.12].map((x, i) => (
+        <mesh key={i} position={[x, 0.26, 0.02]} scale={[0.35, 0.78, 1]}>
+          <sphereGeometry args={[0.28, 12, 12]} />
+          <meshStandardMaterial
+            color={i === 1 ? "#f09830" : tint}
+            roughness={0.55}
+            transparent
+            opacity={0.35}
+          />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.5, 0]} castShadow>
+        <cylinderGeometry args={[0.03, 0.04, 0.12, 6]} />
         <meshStandardMaterial color="#3d6b2e" roughness={0.8} />
       </mesh>
-      <mesh position={[0.18, 0.22, 0.2]} rotation={[0.5, 0.4, 0.2]}>
-        <torusGeometry args={[0.12, 0.02, 6, 12, Math.PI]} />
+      <mesh position={[0.16, 0.2, 0.18]} rotation={[0.5, 0.4, 0.2]} castShadow>
+        <torusGeometry args={[0.11, 0.02, 6, 12, Math.PI]} />
         <meshStandardMaterial color="#4f8f45" roughness={0.85} />
       </mesh>
     </group>
   );
 }
 
-const CROP_MESH: Record<
-  CropId,
-  (props: { tint: string }) => ReactElement
-> = {
+const CROP_MESH: Record<CropId, (props: { tint: string }) => ReactElement> = {
   wheat: WheatCrop,
   corn: CornCrop,
   carrot: CarrotCrop,
   tomato: TomatoCrop,
   pumpkin: PumpkinCrop,
 };
+
+/** Multiple plant instances across a rectangular bed */
+function PlantCluster({
+  cropId,
+  tint,
+}: {
+  cropId: CropId;
+  tint: string;
+}) {
+  const Mesh = CROP_MESH[cropId];
+  const offsets =
+    cropId === "pumpkin"
+      ? [{ x: 0, z: 0, s: 1 }]
+      : cropId === "tomato"
+        ? [
+            { x: -0.22, z: 0.12, s: 0.85 },
+            { x: 0.22, z: -0.1, s: 0.9 },
+          ]
+        : cropId === "wheat"
+          ? [
+              { x: -0.22, z: 0.15, s: 0.75 },
+              { x: 0.2, z: 0.1, s: 0.8 },
+              { x: -0.05, z: -0.18, s: 0.78 },
+            ]
+          : [
+              { x: -0.2, z: 0.12, s: 0.72 },
+              { x: 0.18, z: -0.08, s: 0.75 },
+            ];
+
+  return (
+    <group>
+      {offsets.map((o, i) => (
+        <group key={i} position={[o.x, 0, o.z]} scale={o.s}>
+          <Mesh tint={tint} />
+        </group>
+      ))}
+    </group>
+  );
+}
 
 export function CropPlant({
   cropId,
@@ -241,7 +336,6 @@ export function CropPlant({
   const group = useRef<Group>(null);
   const target = STAGE_SCALE[stage];
   const tint = CROPS[cropId].tint;
-  const Mesh = useMemo(() => CROP_MESH[cropId], [cropId]);
 
   useFrame((state) => {
     const g = group.current;
@@ -255,10 +349,10 @@ export function CropPlant({
     }
     g.visible = true;
     if (stage === "grown" || stage === "sprout") {
-      g.rotation.z = Math.sin(t * 1.4 + swaySeed) * 0.06;
-      g.rotation.x = Math.cos(t * 1.1 + swaySeed * 0.7) * 0.03;
+      g.rotation.z = Math.sin(t * 1.35 + swaySeed) * 0.05;
+      g.rotation.x = Math.cos(t * 1.05 + swaySeed * 0.7) * 0.025;
       if (stage === "grown") {
-        g.position.y = Math.sin(t * 2.2 + swaySeed) * 0.02;
+        g.position.y = Math.sin(t * 2.1 + swaySeed) * 0.015;
       }
     } else {
       g.rotation.z *= 0.9;
@@ -271,12 +365,38 @@ export function CropPlant({
   return (
     <group ref={group} scale={0.001}>
       {stage === "seed" ? (
-        <mesh position={[0, 0.04, 0]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial color="#5c3d2e" roughness={0.9} />
-        </mesh>
+        <group>
+          {[
+            [-0.15, 0.12],
+            [0.12, -0.08],
+            [0.05, 0.1],
+          ].map(([x, z], i) => (
+            <mesh key={i} position={[x, 0.04, z]}>
+              <sphereGeometry args={[0.045, 8, 8]} />
+              <meshStandardMaterial color="#6b4423" roughness={0.9} />
+            </mesh>
+          ))}
+        </group>
+      ) : stage === "sprout" ? (
+        <group>
+          {[
+            [-0.15, 0.1],
+            [0.14, -0.06],
+          ].map(([x, z], i) => (
+            <group key={i} position={[x, 0, z]}>
+              <mesh position={[0, 0.12, 0]}>
+                <cylinderGeometry args={[0.015, 0.02, 0.22, 5]} />
+                <meshStandardMaterial color="#4caf50" roughness={0.85} />
+              </mesh>
+              <mesh position={[0.04, 0.2, 0]} rotation={[0, 0, 0.6]}>
+                <boxGeometry args={[0.12, 0.01, 0.05]} />
+                <meshStandardMaterial color="#66bb6a" roughness={0.9} />
+              </mesh>
+            </group>
+          ))}
+        </group>
       ) : (
-        <Mesh tint={tint} />
+        <PlantCluster cropId={cropId} tint={tint} />
       )}
     </group>
   );
