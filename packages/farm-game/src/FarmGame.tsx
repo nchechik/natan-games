@@ -149,8 +149,10 @@ export function FarmGame() {
             <span className="fg-stat__gem" aria-hidden />
             <span>{state.wallet.gems}</span>
           </div>
-          <div className="fg-stat fg-stat--xp" title="Experience">
-            <span className="fg-stat__xp-label">XP</span>
+          <div className="fg-stat fg-stat--wheat" title="Experience">
+            <span className="fg-stat__wheat" aria-hidden>
+              🌾
+            </span>
             <span>{state.wallet.xp}</span>
           </div>
         </div>
