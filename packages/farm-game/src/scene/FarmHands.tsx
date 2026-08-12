@@ -52,14 +52,14 @@ function RestArea({
         <Chair
           key={`w-${i}`}
           position={[-0.65 - i * 0.58, 0, 0.2]}
-          rotation={Math.PI + 0.12}
+          rotation={0.08}
         />
       ))}
       {Array.from({ length: Math.max(1, harvestSeats) }, (_, i) => (
         <Chair
           key={`h-${i}`}
           position={[0.55 + i * 0.58, 0, 0.2]}
-          rotation={Math.PI - 0.1}
+          rotation={-0.08}
         />
       ))}
     </group>
@@ -376,7 +376,7 @@ export function HarvestingWorker({
 
   return (
     <a.group position-x={posX} position-y={0} position-z={posZ} scale={HAND_SCALE}>
-      <group rotation={[0, working ? -0.85 : Math.PI + 0.2, 0]}>
+      <group rotation={[0, working ? -0.85 : -0.1, 0]}>
         <group position={[0, working ? 0 : 0.12, 0]}>
           <MiniFarmerBody
             outfit={HARVEST_OUTFIT}
