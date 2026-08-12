@@ -77,9 +77,8 @@ export function FarmGame() {
     const stage = getGrowthStage(plot, now);
     if (stage === "grown") {
       dispatch({ type: "TAP_PLOT", plotId: plot.id, now });
-      flash(`Harvested wheat! Head to the market to sell`);
+      flash(`Harvested wheat! Sell it at the market`);
       setMarketPulse(true);
-      window.setTimeout(() => goToMarket(), 650);
       return;
     }
     if (!plot.cropId) {
