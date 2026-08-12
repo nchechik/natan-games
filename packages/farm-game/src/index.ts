@@ -3,6 +3,7 @@ export {
   CROPS,
   CROP_LIST,
   WORKER_COST,
+  HARVESTER_COST,
   createInitialFarmState,
   SAVE_KEY,
   SAVE_VERSION,

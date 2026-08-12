@@ -7,7 +7,7 @@ import { TOUCH, type PerspectiveCamera } from "three";
 import { getGrowthStage, type PlotState } from "../types";
 import { FarmWorld } from "./FarmWorld";
 import { PlotBed } from "./PlotBed";
-import { WateringWorker } from "./WateringWorker";
+import { FarmHands } from "./FarmHands";
 
 function useMobileFarmView() {
   const [mobile, setMobile] = useState(false);
@@ -47,6 +47,8 @@ export function FarmCanvas({
   unlockCosts,
   hasWorker,
   workerPlotId,
+  hasHarvester,
+  harvesterPlotId,
   onTapPlot,
   onUnlockPlot,
 }: {
@@ -55,20 +57,27 @@ export function FarmCanvas({
   unlockCosts: number[];
   hasWorker: boolean;
   workerPlotId: string | null;
+  hasHarvester: boolean;
+  harvesterPlotId: string | null;
   onTapPlot: (plot: PlotState) => void;
   onUnlockPlot: (plot: PlotState, index: number) => void;
 }) {
   const mobile = useMobileFarmView();
-  const workerIndex =
-    workerPlotId == null
-      ? null
-      : plots.findIndex((p) => p.id === workerPlotId);
-  const workerPlot =
-    workerIndex != null && workerIndex >= 0 ? plots[workerIndex] : null;
+
+  const waterIndex =
+    workerPlotId == null ? null : plots.findIndex((p) => p.id === workerPlotId);
+  const waterPlot =
+    waterIndex != null && waterIndex >= 0 ? plots[waterIndex] : null;
   const watering =
-    !!workerPlot &&
-    (getGrowthStage(workerPlot, now) === "seed" ||
-      getGrowthStage(workerPlot, now) === "sprout");
+    !!waterPlot &&
+    (getGrowthStage(waterPlot, now) === "seed" ||
+      getGrowthStage(waterPlot, now) === "sprout");
+
+  const harvestIndex =
+    harvesterPlotId == null
+      ? null
+      : plots.findIndex((p) => p.id === harvesterPlotId);
+  const harvesting = harvestIndex != null && harvestIndex >= 0;
 
   return (
     <div className="fg-canvas">
@@ -92,7 +101,7 @@ export function FarmCanvas({
       >
         <Suspense fallback={null}>
           <MobileCameraRig mobile={mobile} />
-          <FarmWorld hasWorker={hasWorker} />
+          <FarmWorld hasWorker={hasWorker || hasHarvester} />
           {plots.map((plot, index) => (
             <PlotBed
               key={plot.id}
@@ -104,12 +113,16 @@ export function FarmCanvas({
               onUnlock={() => onUnlockPlot(plot, index)}
             />
           ))}
-          {hasWorker && (
-            <WateringWorker
-              plotIndex={workerIndex != null && workerIndex >= 0 ? workerIndex : null}
-              watering={watering}
-            />
-          )}
+          <FarmHands
+            hasWorker={hasWorker}
+            hasHarvester={hasHarvester}
+            waterPlotIndex={waterIndex != null && waterIndex >= 0 ? waterIndex : null}
+            watering={watering}
+            harvestPlotIndex={
+              harvestIndex != null && harvestIndex >= 0 ? harvestIndex : null
+            }
+            harvesting={harvesting}
+          />
           <ContactShadows
             position={[0, 0.01, 0]}
             opacity={mobile ? 0.28 : 0.4}

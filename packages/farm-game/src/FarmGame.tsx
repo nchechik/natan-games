@@ -10,6 +10,7 @@ import { loadSave, persistSave } from "@natan-games/game-core";
 import { farmReducer } from "./reducer";
 import {
   CROPS,
+  HARVESTER_COST,
   WORKER_COST,
   createInitialFarmState,
   getGrowthStage,
@@ -65,11 +66,24 @@ export function FarmGame() {
     return () => window.clearTimeout(id);
   }, [toast]);
 
-  // Hired worker: water one empty field at a time, wait until growth finishes
+  // Hired water worker: one empty field at a time
   useEffect(() => {
     if (!hydrated || !state.hasWorker) return;
     dispatch({ type: "WORKER_TICK", now });
   }, [hydrated, state.hasWorker, state.workerPlotId, state.plots, now]);
+
+  // Hired harvester: one ready field at a time
+  useEffect(() => {
+    if (!hydrated || !state.hasHarvester) return;
+    dispatch({ type: "HARVESTER_TICK", now });
+  }, [
+    hydrated,
+    state.hasHarvester,
+    state.harvesterPlotId,
+    state.harvesterStartedAt,
+    state.plots,
+    now,
+  ]);
 
   const flash = (message: string) => setToast(message);
 
@@ -126,15 +140,28 @@ export function FarmGame() {
 
   const buyWorker = () => {
     if (state.hasWorker) {
-      flash("Worker already hired");
+      flash("Water worker already hired");
       return;
     }
     if (state.wallet.coins < WORKER_COST) {
-      flash(`Need ${WORKER_COST} coins to hire a worker`);
+      flash(`Need ${WORKER_COST} coins to hire a water worker`);
       return;
     }
     dispatch({ type: "BUY_WORKER" });
-    flash("Worker hired! They’ll water one field at a time");
+    flash("Water worker hired!");
+  };
+
+  const buyHarvester = () => {
+    if (state.hasHarvester) {
+      flash("Harvester already hired");
+      return;
+    }
+    if (state.wallet.coins < HARVESTER_COST) {
+      flash(`Need ${HARVESTER_COST} coins to hire a harvester`);
+      return;
+    }
+    dispatch({ type: "BUY_HARVESTER" });
+    flash("Harvester hired!");
   };
 
   return (
@@ -146,6 +173,8 @@ export function FarmGame() {
           unlockCosts={PLOT_UNLOCK_COSTS}
           hasWorker={state.hasWorker}
           workerPlotId={state.workerPlotId}
+          hasHarvester={state.hasHarvester}
+          harvesterPlotId={state.harvesterPlotId}
           onTapPlot={tapPlot}
           onUnlockPlot={unlockPlot}
         />
@@ -154,8 +183,8 @@ export function FarmGame() {
           <div className="fg-brand">
             <p className="fg-brand__mark">Sunny Acre</p>
             <p className="fg-brand__sub">
-              {state.hasWorker
-                ? "Worker watering · Harvest · Sell · Expand"
+              {state.hasWorker || state.hasHarvester
+                ? "Hands at work · Sell · Expand"
                 : "Water · Harvest · Sell · Expand"}
             </p>
           </div>
@@ -254,13 +283,15 @@ export function FarmGame() {
 
           <div className={`fg-worker-offer ${state.hasWorker ? "is-hired" : ""}`}>
             <span className="fg-worker-offer__emoji" aria-hidden>
-              🧑‍🌾
+              💧
             </span>
             <div className="fg-worker-offer__copy">
-              <strong>{state.hasWorker ? "Worker hired" : "Hire a farmhand"}</strong>
+              <strong>
+                {state.hasWorker ? "Water worker hired" : "Hire water worker"}
+              </strong>
               <span>
                 {state.hasWorker
-                  ? "Waters one empty field at a time, then starts the next"
+                  ? "Waters one empty field at a time from the left"
                   : `Auto-waters empty fields · ${WORKER_COST} coins`}
               </span>
             </div>
@@ -274,6 +305,38 @@ export function FarmGame() {
                 Buy
                 <span className="fg-stat__coin" aria-hidden />
                 {WORKER_COST}
+              </button>
+            ) : (
+              <span className="fg-worker-offer__badge">Active</span>
+            )}
+          </div>
+
+          <div
+            className={`fg-worker-offer fg-worker-offer--harvest ${state.hasHarvester ? "is-hired" : ""}`}
+          >
+            <span className="fg-worker-offer__emoji" aria-hidden>
+              🌾
+            </span>
+            <div className="fg-worker-offer__copy">
+              <strong>
+                {state.hasHarvester ? "Harvester hired" : "Hire harvester"}
+              </strong>
+              <span>
+                {state.hasHarvester
+                  ? "Harvests one ready field at a time from the right"
+                  : `Auto-harvests wheat · ${HARVESTER_COST} coins`}
+              </span>
+            </div>
+            {!state.hasHarvester ? (
+              <button
+                type="button"
+                className="fg-market-btn fg-market-btn--harvester"
+                disabled={state.wallet.coins < HARVESTER_COST}
+                onClick={buyHarvester}
+              >
+                Buy
+                <span className="fg-stat__coin" aria-hidden />
+                {HARVESTER_COST}
               </button>
             ) : (
               <span className="fg-worker-offer__badge">Active</span>

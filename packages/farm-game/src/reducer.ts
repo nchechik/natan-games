@@ -1,6 +1,8 @@
 import { applyXp, spend } from "@natan-games/game-core";
 import {
   CROPS,
+  HARVEST_ANIM_MS,
+  HARVESTER_COST,
   WORKER_COST,
   getGrowthStage,
   type FarmState,
@@ -14,7 +16,9 @@ export type FarmAction =
   | { type: "SELL_ALL_WHEAT" }
   | { type: "UNLOCK_PLOT"; plotId: PlotId }
   | { type: "BUY_WORKER" }
+  | { type: "BUY_HARVESTER" }
   | { type: "WORKER_TICK"; now: number }
+  | { type: "HARVESTER_TICK"; now: number }
   | { type: "RENAME_FARM"; name: string }
   | { type: "HYDRATE"; state: FarmState };
 
@@ -23,7 +27,33 @@ function normalizeState(state: FarmState): FarmState {
     ...state,
     hasWorker: Boolean(state.hasWorker),
     workerPlotId: state.workerPlotId ?? null,
+    hasHarvester: Boolean(state.hasHarvester),
+    harvesterPlotId: state.harvesterPlotId ?? null,
+    harvesterStartedAt: state.harvesterStartedAt ?? null,
     wheat: state.wheat ?? 0,
+  };
+}
+
+function harvestPlot(state: FarmState, plotId: PlotId, now: number): FarmState | null {
+  const index = state.plots.findIndex((p) => p.id === plotId);
+  if (index < 0) return null;
+  const plot = state.plots[index];
+  if (!plot.unlocked || !plot.cropId || plot.plantedAt == null) return null;
+  const def = CROPS[plot.cropId];
+  if (now - plot.plantedAt < def.growMs) return null;
+
+  const wallet = applyXp(state.wallet, def.xp);
+  const plots = state.plots.map((p, i) =>
+    i === index ? { ...p, cropId: null, plantedAt: null } : p,
+  );
+  return {
+    ...state,
+    wallet,
+    wheat: state.wheat + 1,
+    plots,
+    workerPlotId: state.workerPlotId === plotId ? null : state.workerPlotId,
+    harvesterPlotId: null,
+    harvesterStartedAt: null,
   };
 }
 
@@ -77,6 +107,12 @@ export function farmReducer(state: FarmState, action: FarmAction): FarmState {
       if (!nextWallet) return state;
       return { ...state, wallet: nextWallet, hasWorker: true };
     }
+    case "BUY_HARVESTER": {
+      if (state.hasHarvester) return state;
+      const nextWallet = spend(state.wallet, { coins: HARVESTER_COST });
+      if (!nextWallet) return state;
+      return { ...state, wallet: nextWallet, hasHarvester: true };
+    }
     case "WORKER_TICK": {
       if (!state.hasWorker) return state;
 
@@ -89,11 +125,9 @@ export function farmReducer(state: FarmState, action: FarmAction): FarmState {
           workerPlotId = null;
         } else {
           const stage = getGrowthStage(plot, action.now);
-          // Still watering this field — wait until growth finishes
           if (stage === "seed" || stage === "sprout") {
             return state;
           }
-          // Growth finished (grown) or plot cleared — free the worker
           workerPlotId = null;
         }
       }
@@ -115,13 +149,43 @@ export function farmReducer(state: FarmState, action: FarmAction): FarmState {
       }
       return { ...state, plots, workerPlotId };
     }
+    case "HARVESTER_TICK": {
+      if (!state.hasHarvester) return state;
+
+      // Finish an in-progress harvest animation
+      if (state.harvesterPlotId && state.harvesterStartedAt != null) {
+        if (action.now - state.harvesterStartedAt < HARVEST_ANIM_MS) {
+          return state;
+        }
+        const harvested = harvestPlot(state, state.harvesterPlotId, action.now);
+        return harvested ?? {
+          ...state,
+          harvesterPlotId: null,
+          harvesterStartedAt: null,
+        };
+      }
+
+      // Start harvesting the next ready field (one at a time)
+      const ready = state.plots.find(
+        (p) => p.unlocked && getGrowthStage(p, action.now) === "grown",
+      );
+      if (!ready) {
+        if (state.harvesterPlotId == null) return state;
+        return { ...state, harvesterPlotId: null, harvesterStartedAt: null };
+      }
+
+      return {
+        ...state,
+        harvesterPlotId: ready.id,
+        harvesterStartedAt: action.now,
+      };
+    }
     case "TAP_PLOT": {
       const index = state.plots.findIndex((p) => p.id === action.plotId);
       if (index < 0) return state;
       const plot = state.plots[index];
       if (!plot.unlocked) return state;
 
-      // Harvest ready wheat
       if (plot.cropId && plot.plantedAt != null) {
         const def = CROPS[plot.cropId];
         const ready = action.now - plot.plantedAt >= def.growMs;
@@ -135,17 +199,18 @@ export function farmReducer(state: FarmState, action: FarmAction): FarmState {
             wallet,
             wheat: state.wheat + 1,
             plots,
-            // If worker was on this plot, they're free after harvest clears it
             workerPlotId:
               state.workerPlotId === plot.id ? null : state.workerPlotId,
+            harvesterPlotId:
+              state.harvesterPlotId === plot.id ? null : state.harvesterPlotId,
+            harvesterStartedAt:
+              state.harvesterPlotId === plot.id ? null : state.harvesterStartedAt,
           };
         }
         return state;
       }
 
-      // Empty unlocked plot → plant & water wheat (no seed bag)
       if (!plot.cropId) {
-        // Don't steal a plot the worker is about to claim mid-tick; player can still plant
         const plots = state.plots.map((p, i) =>
           i === index
             ? { ...p, cropId: "wheat" as const, plantedAt: action.now }

@@ -33,14 +33,22 @@ export interface FarmState {
   plots: PlotState[];
   /** Hired hand that auto-waters one empty field at a time */
   hasWorker: boolean;
-  /** Plot the worker is currently watering, if any */
+  /** Plot the water worker is currently watering, if any */
   workerPlotId: PlotId | null;
+  /** Hired hand that auto-harvests one ready field at a time */
+  hasHarvester: boolean;
+  /** Plot the harvester is currently working, if any */
+  harvesterPlotId: PlotId | null;
+  /** When the current harvest animation started */
+  harvesterStartedAt: number | null;
 }
 
-export const SAVE_KEY = "natan-games:farm:v3";
-export const SAVE_VERSION = 3;
+export const SAVE_KEY = "natan-games:farm:v4";
+export const SAVE_VERSION = 4;
 
 export const WORKER_COST = 100;
+export const HARVESTER_COST = 200;
+export const HARVEST_ANIM_MS = 1400;
 
 /** Wheat is the starter crop; other defs remain for plant meshes if unlocked later */
 export const CROPS: Record<CropId, CropDef> = {
@@ -116,6 +124,9 @@ export function createInitialFarmState(): FarmState {
     plots,
     hasWorker: false,
     workerPlotId: null,
+    hasHarvester: false,
+    harvesterPlotId: null,
+    harvesterStartedAt: null,
   };
 }
 
